@@ -27,47 +27,62 @@ DEFAULT_MENU = [
 
 # UTILITIES
 def load_json(file_path, default_data):
+    """Load JSON file with proper error handling and directory creation"""
+    dir_path = os.path.dirname(file_path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
+    
     if not os.path.exists(file_path):
-        os.makedirs(os.path.dirname(file_path) if os.path.dirname(file_path) else '.', exist_ok=True)
-        with open(file_path, "w") as f: 
-            json.dump(default_data, f, indent=4)
+        with open(file_path, "w", encoding='utf-8') as f: 
+            json.dump(default_data, f, indent=4, ensure_ascii=False)
+        return default_data
+    
     try:
-        with open(file_path, "r") as f: 
+        with open(file_path, "r", encoding='utf-8') as f: 
             return json.load(f)
-    except: 
-        with open(file_path, "w") as f: 
-            json.dump(default_data, f, indent=4)
+    except (json.JSONDecodeError, FileNotFoundError):
+        with open(file_path, "w", encoding='utf-8') as f: 
+            json.dump(default_data, f, indent=4, ensure_ascii=False)
         return default_data
 
 def save_json(file_path, data):
-    os.makedirs(os.path.dirname(file_path) if os.path.dirname(file_path) else '.', exist_ok=True)
-    with open(file_path, "w") as f: 
-        json.dump(data, f, indent=4)
+    """Save JSON file with proper encoding"""
+    dir_path = os.path.dirname(file_path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
+    with open(file_path, "w", encoding='utf-8') as f: 
+        json.dump(data, f, indent=4, ensure_ascii=False)
 
 def format_currency(amount): 
-    return f"Rp {int(amount):,}".replace(",", ".")
+    """Format currency with Indonesian locale"""
+    try:
+        return f"Rp {int(float(amount)):,}".replace(",", ".")
+    except:
+        return "Rp 0"
 
 def format_date(date_str): 
-    return pd.to_datetime(date_str).strftime("%d/%m/%Y") if date_str else ""
+    """Format date string safely"""
+    try:
+        if pd.isna(date_str) or date_str == "":
+            return ""
+        return pd.to_datetime(date_str).strftime("%d/%m/%Y")
+    except:
+        return ""
 
-# LOAD DATA
-users = load_json(USER_FILE, DEFAULT_USERS)
-menu_data = load_json(MENU_FILE, DEFAULT_MENU)
-pengeluaran_data = load_json(PENGELUARAN_FILE, [])
-pendapatan_data = load_json(PENDAPATAN_FILE, [])
-karyawan_data = load_json(KARYAWAN_FILE, [])
+# SESSION STATE INITIALIZATION - FIXED
+def init_session_state():
+    if "login" not in st.session_state: 
+        st.session_state.login = False
+    if "username" not in st.session_state: 
+        st.session_state.username = ""
+    if "role" not in st.session_state: 
+        st.session_state.role = ""
+    if "selected_menu" not in st.session_state: 
+        st.session_state.selected_menu = "📊 Dashboard"
+    if "sidebar_open" not in st.session_state:
+        st.session_state.sidebar_open = True
 
-# SESSION STATE
-if "login" not in st.session_state: 
-    st.session_state.login = False
-if "username" not in st.session_state: 
-    st.session_state.username = ""
-if "role" not in st.session_state: 
-    st.session_state.role = ""
-if "selected_menu" not in st.session_state: 
-    st.session_state.selected_menu = "📊 Dashboard"
-if "sidebar_open" not in st.session_state:
-    st.session_state.sidebar_open = True
+init_session_state()
 
 # =========================================
 # 🌈 PREMIUM CSS DESIGN
@@ -113,6 +128,7 @@ if not st.session_state.login:
         password = st.text_input("🔑 Password", type="password", placeholder="admin123")
     
     if st.button("🚀 Masuk ke Dashboard", use_container_width=True):
+        users = load_json(USER_FILE, DEFAULT_USERS)
         if username in users and users[username]["password"] == password:
             st.session_state.update(login=True, username=username, role=users[username]["role"])
             st.success("✅ Selamat datang!")
@@ -131,21 +147,27 @@ else:
     pendapatan_data = load_json(PENDAPATAN_FILE, [])
     karyawan_data = load_json(KARYAWAN_FILE, [])
     
-    # CALCULATE TOTALS
-    total_pendapatan = sum(d.get("total", 0) for d in pendapatan_data)
-    total_pengeluaran = sum(d.get("harga", 0) for d in pengeluaran_data)
-    total_gaji = sum(d.get("gaji", 0) for d in karyawan_data)
+    # CALCULATE TOTALS SAFELY
+    total_pendapatan = sum(float(d.get("total", 0)) for d in pendapatan_data)
+    total_pengeluaran = sum(float(d.get("harga", 0)) for d in pengeluaran_data)
+    total_gaji = sum(float(d.get("gaji", 0)) for d in karyawan_data)
     keuntungan = total_pendapatan - total_pengeluaran - total_gaji
 
-    # TOP BAR - SIDEBAR TOGGLE
-    top_col1, top_col2 = st.columns([1, 10])
+    # TOP BAR - SIMPLIFIED
+    top_col1, top_col2 = st.columns([1, 1])
     with top_col1:
-        if not st.session_state.sidebar_open:
-            if st.button("📱"):
-                st.session_state.sidebar_open = True
-                st.rerun()
+        if st.button("📱 Buka Sidebar"):
+            st.session_state.sidebar_open = True
+            st.rerun()
+    with top_col2:
+        if st.button("🚪 Logout"):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]
+            st.rerun()
 
-    # SIDEBAR
+    # =========================================
+    # SIDEBAR - FULLY FIXED VERSION ✅
+    # =========================================
     if st.session_state.sidebar_open:
         with st.sidebar:
             # CLOSE BUTTON
@@ -188,34 +210,40 @@ else:
             st.metric("💸 Pengeluaran", format_currency(total_pengeluaran))
             st.metric("💚 Keuntungan", format_currency(keuntungan))
 
-            # MENU OPTIONS
-            if st.session_state.role == "host":
-                menu_options = [
-                    "📊 Dashboard",
-                    "🍹 Menu Jualan",
-                    "💰 Pendapatan",
-                    "💸 Pengeluaran",
-                    "👥 Karyawan",
-                    "📈 Laporan"
-                ]
-            else:
-                menu_options = [
-                    "💰 Pendapatan",
-                    "💸 Pengeluaran",
-                    "📈 Laporan Harian"
-                ]
+            # FIXED MENU OPTIONS - 100% SAFE ✅
+            host_menus = [
+                "📊 Dashboard",
+                "🍹 Menu Jualan", 
+                "💰 Pendapatan",
+                "💸 Pengeluaran",
+                "👥 Karyawan",
+                "📈 Laporan"
+            ]
 
-            selected = st.radio("📋 Pilih Menu:", menu_options, key="sidebar_menu", index=menu_options.index(st.session_state.selected_menu))
+            karyawan_menus = [
+                "💰 Pendapatan",
+                "💸 Pengeluaran", 
+                "📈 Laporan Harian"
+            ]
+
+            if st.session_state.role == "host":
+                menu_options = host_menus
+            else:
+                menu_options = karyawan_menus
+
+            # Ensure current menu exists in options
+            if st.session_state.selected_menu not in menu_options:
+                st.session_state.selected_menu = menu_options[0]
+
+            selected = st.radio("📋 Pilih Menu:", menu_options, 
+                              key=f"sidebar_menu_{st.session_state.username}_{st.session_state.role}",
+                              index=menu_options.index(st.session_state.selected_menu))
 
             if selected != st.session_state.selected_menu:
                 st.session_state.selected_menu = selected
                 st.rerun()
 
-            # LOGOUT
-            if st.button("🚪 Logout", use_container_width=True):
-                for key in list(st.session_state.keys()):
-                    del st.session_state[key]
-                st.rerun()
+            st.divider()
 
     # MAIN CONTENT TITLE
     st.markdown(f"<div class='big-title'>{st.session_state.selected_menu}</div>", unsafe_allow_html=True)
@@ -248,13 +276,13 @@ else:
     elif st.session_state.selected_menu == "🍹 Menu Jualan" and st.session_state.role == "host":
         st.header("➕ Tambah Menu Baru")
         col1, col2, col3 = st.columns(3)
-        with col1: nama = st.text_input("Nama Menu")
-        with col2: harga1 = st.number_input("Harga 1 Gelas", min_value=1000, value=3000)
-        with col3: harga2 = st.number_input("Harga 2 Gelas", min_value=2000, value=5000)
+        with col1: nama = st.text_input("Nama Menu", key="menu_nama")
+        with col2: harga1 = st.number_input("Harga 1 Gelas", min_value=1000, value=3000, key="harga1")
+        with col3: harga2 = st.number_input("Harga 2 Gelas", min_value=2000, value=5000, key="harga2")
         
         if st.button("💾 Tambah Menu", use_container_width=True):
-            if nama.strip():  # Validate input
-                menu_data.append({"nama": nama, "harga_1": harga1, "harga_2": harga2, "stok": 50})
+            if nama.strip():  
+                menu_data.append({"nama": nama, "harga_1": float(harga1), "harga_2": float(harga2), "stok": 50})
                 save_json(MENU_FILE, menu_data)
                 st.success("✅ Menu ditambahkan!")
                 st.rerun()
@@ -274,34 +302,39 @@ else:
         col1, col2, col3, col4 = st.columns(4)
         with col1: 
             menu_options = [""] + [m["nama"] for m in menu_data]
-            menu_pilih = st.selectbox("Menu", menu_options)
+            menu_pilih = st.selectbox("Menu", menu_options, key="menu_select_penjualan")
         with col2: 
-            gelas_size = st.radio("Ukuran Gelas", ["1 Gelas", "2 Gelas"], horizontal=True)
+            gelas_size = st.radio("Ukuran Gelas", ["1 Gelas", "2 Gelas"], horizontal=True, key="gelas_size_penjualan")
         with col3: 
-            jumlah = st.number_input("Jumlah", min_value=1, value=1, step=1)
+            jumlah = st.number_input("Jumlah", min_value=1, value=1, step=1, key="jumlah_penjualan")
         with col4: 
-            tanggal = st.date_input("Tanggal", value=date.today())
+            tanggal = st.date_input("Tanggal", value=date.today(), key="tanggal_penjualan")
         
         if menu_pilih:
-            menu = next(m for m in menu_data if m["nama"] == menu_pilih)
-            harga_per_gelas = menu["harga_1"] if gelas_size == "1 Gelas" else menu["harga_2"]
-            total = harga_per_gelas * jumlah
-            st.success(f"💰 **Harga per gelas: {format_currency(harga_per_gelas)}**")
-            st.success(f"💰 **Total ({jumlah} x {gelas_size}): {format_currency(total)}**")
-            
-            if st.button("✅ Simpan Penjualan", use_container_width=True):
-                pendapatan_data.append({
-                    "tanggal": tanggal.strftime("%Y-%m-%d"),
-                    "menu": menu_pilih,
-                    "ukuran": gelas_size,
-                    "jumlah": jumlah,
-                    "harga_per_gelas": harga_per_gelas,
-                    "total": total,
-                    "oleh": st.session_state.username
-                })
-                save_json(PENDAPATAN_FILE, pendapatan_data)
-                st.success("✅ Penjualan tersimpan!")
-                st.rerun()
+            try:
+                menu = next(m for m in menu_data if m["nama"] == menu_pilih)
+                harga_per_gelas = float(menu["harga_1"]) if gelas_size == "1 Gelas" else float(menu["harga_2"])
+                total = harga_per_gelas * jumlah
+                st.success(f"💰 **Harga per gelas: {format_currency(harga_per_gelas)}**")
+                st.success(f"💰 **Total ({jumlah} x {gelas_size}): {format_currency(total)}**")
+                
+                if st.button("✅ Simpan Penjualan", use_container_width=True):
+                    pendapatan_data.append({
+                        "tanggal": tanggal.strftime("%Y-%m-%d"),
+                        "menu": menu_pilih,
+                        "ukuran": gelas_size,
+                        "jumlah": jumlah,
+                        "harga_per_gelas": harga_per_gelas,
+                        "total": total,
+                        "oleh": st.session_state.username
+                    })
+                    save_json(PENDAPATAN_FILE, pendapatan_data)
+                    st.success("✅ Penjualan tersimpan!")
+                    st.rerun()
+            except StopIteration:
+                st.error("❌ Menu tidak ditemukan!")
+        else:
+            st.info("👆 Pilih menu terlebih dahulu")
 
         st.header("📊 Riwayat Penjualan")
         if pendapatan_data:
@@ -309,22 +342,27 @@ else:
             df["tanggal"] = df["tanggal"].apply(format_date)
             df["total"] = df["total"].apply(format_currency)
             df["harga_per_gelas"] = df["harga_per_gelas"].apply(format_currency)
-            display_cols = ["tanggal", "menu", "ukuran", "jumlah", "harga_per_gelas", "total", "oleh"] if "ukuran" in df.columns else ["tanggal", "menu", "jumlah", "harga_per_gelas", "total", "oleh"]
-            df = df[display_cols]
-            df.columns = ["Tanggal", "Menu", "Ukuran", "Jumlah", "Harga/Gelas", "Total", "Oleh"] if "Ukuran" in df.columns else ["Tanggal", "Menu", "Jumlah", "Harga/Gelas", "Total", "Oleh"]
-            st.dataframe(df, use_container_width=True, hide_index=True)
+            
+            display_cols = ["tanggal", "menu", "ukuran", "jumlah", "harga_per_gelas", "total", "oleh"]
+            available_cols = [col for col in display_cols if col in df.columns]
+            df_display = df[available_cols]
+            
+            col_names = ["Tanggal", "Menu", "Ukuran", "Jumlah", "Harga/Gelas", "Total", "Oleh"]
+            df_display.columns = col_names[:len(available_cols)]
+            
+            st.dataframe(df_display, use_container_width=True, hide_index=True)
         else:
             st.info("📝 Belum ada data penjualan")
 
     elif st.session_state.selected_menu == "💸 Pengeluaran":
         st.header("➕ Input Pengeluaran")
         col1, col2, col3 = st.columns([1.5, 3, 1.5])
-        with col1: tanggal = st.date_input("Tanggal", value=date.today())
-        with col2: barang = st.text_input("Nama Barang", placeholder="Gula 5kg, Es Batu, dll")
-        with col3: harga = st.number_input("Harga", min_value=0.0, value=0.0, step=1000.0)
+        with col1: tanggal = st.date_input("Tanggal", value=date.today(), key="exp_date")
+        with col2: barang = st.text_input("Nama Barang", placeholder="Gula 5kg, Es Batu, dll", key="exp_barang")
+        with col3: harga = st.number_input("Harga", min_value=0.0, value=0.0, step=1000.0, key="exp_harga")
         
         if st.button("💸 Simpan Pengeluaran", use_container_width=True):
-            if barang.strip():  # Validate input
+            if barang.strip():  
                 pengeluaran_data.append({
                     "tanggal": tanggal.strftime("%Y-%m-%d"),
                     "barang": barang,
@@ -350,15 +388,15 @@ else:
     elif st.session_state.selected_menu == "👥 Karyawan" and st.session_state.role == "host":
         st.header("👑 Buat Akun Karyawan")
         col1, col2, col3, col4 = st.columns(4)
-        with col1: nama = st.text_input("Nama Lengkap")
-        with col2: username = st.text_input("Username")
-        with col3: password = st.text_input("Password", type="password")
-        with col4: gaji = st.number_input("Gaji/Bulan", min_value=0.0, value=1000000.0)
+        with col1: nama = st.text_input("Nama Lengkap", key="emp_nama")
+        with col2: username = st.text_input("Username", key="emp_username")
+        with col3: password = st.text_input("Password", type="password", key="emp_password")
+        with col4: gaji = st.number_input("Gaji/Bulan", min_value=0.0, value=1000000.0, key="emp_gaji")
         
         if st.button("👤 Buat Akun Karyawan", use_container_width=True):
-            if username not in users and username.strip():
-                users[username] = {"password": password, "role": "karyawan", "nama": nama, "gaji": gaji}
-                karyawan_data.append({"username": username, "nama": nama, "gaji": gaji, "status": "aktif"})
+            if username.strip() and username not in users:
+                users[username] = {"password": password, "role": "karyawan", "nama": nama, "gaji": float(gaji)}
+                karyawan_data.append({"username": username, "nama": nama, "gaji": float(gaji), "status": "aktif"})
                 save_json(USER_FILE, users)
                 save_json(KARYAWAN_FILE, karyawan_data)
                 st.success(f"✅ Akun {username} berhasil dibuat!")
@@ -380,35 +418,42 @@ else:
         st.header("📊 Laporan Keuangan")
         
         if pendapatan_data:
-            df_pendapatan = pd.DataFrame(pendapatan_data)
-            df_pendapatan['tanggal'] = pd.to_datetime(df_pendapatan['tanggal'])
-            
-            # HARIAN
-            daily = df_pendapatan.groupby(df_pendapatan['tanggal'].dt.date)['total'].sum()
-            col1, col2 = st.columns(2)
-            with col1:
-                st.subheader("📅 Grafik Harian")
-                st.line_chart(daily)
-            with col2:
-                st.subheader("📋 Tabel Harian")
-                df_daily = daily.reset_index()
-                df_daily['total'] = df_daily['total'].apply(format_currency)
-                df_daily.columns = ['Tanggal', 'Pendapatan']
-                st.dataframe(df_daily, use_container_width=True, hide_index=True)
-            
-            # BULANAN
-            st.subheader("📊 Grafik Bulanan")
-            monthly = df_pendapatan.groupby(df_pendapatan['tanggal'].dt.to_period('M'))['total'].sum()
-            st.bar_chart(monthly)
-            
-            # SUMMARY
-            st.subheader("💼 Ringkasan")
-            summary_data = {
-                "Kategori": ["Total Pendapatan", "Total Pengeluaran", "Total Gaji", "Keuntungan Bersih"],
-                "Nominal": [format_currency(total_pendapatan), format_currency(total_pengeluaran), 
-                           format_currency(total_gaji), format_currency(keuntungan)]
-            }
-            st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
+            try:
+                df_pendapatan = pd.DataFrame(pendapatan_data)
+                df_pendapatan['tanggal'] = pd.to_datetime(df_pendapatan['tanggal'], errors='coerce')
+                df_pendapatan = df_pendapatan.dropna(subset=['tanggal'])
+                
+                if not df_pendapatan.empty:
+                    # HARIAN
+                    daily = df_pendapatan.groupby(df_pendapatan['tanggal'].dt.date)['total'].sum()
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.subheader("📅 Grafik Harian")
+                        st.line_chart(daily)
+                    with col2:
+                        st.subheader("📋 Tabel Harian")
+                        df_daily = daily.reset_index()
+                        df_daily['total'] = df_daily['total'].apply(format_currency)
+                        df_daily.columns = ['Tanggal', 'Pendapatan']
+                        st.dataframe(df_daily, use_container_width=True, hide_index=True)
+                    
+                    # BULANAN
+                    st.subheader("📊 Grafik Bulanan")
+                    monthly = df_pendapatan.groupby(df_pendapatan['tanggal'].dt.to_period('M'))['total'].sum()
+                    st.bar_chart(monthly)
+                    
+                    # SUMMARY
+                    st.subheader("💼 Ringkasan")
+                    summary_data = {
+                        "Kategori": ["Total Pendapatan", "Total Pengeluaran", "Total Gaji", "Keuntungan Bersih"],
+                        "Nominal": [format_currency(total_pendapatan), format_currency(total_pengeluaran), 
+                                   format_currency(total_gaji), format_currency(keuntungan)]
+                    }
+                    st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
+                else:
+                    st.warning("⚠️ Tidak ada data penjualan yang valid untuk laporan")
+            except Exception as e:
+                st.error(f"❌ Error membaca data laporan: {str(e)}")
         else:
             st.info("📝 Catat penjualan dulu untuk melihat laporan!")
 
