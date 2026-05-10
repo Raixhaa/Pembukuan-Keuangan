@@ -855,7 +855,7 @@ else:
                 # =================================
                 # GRAFIK
                 # =================================
-                elif menu == "Grafik":
+            elif menu == "Grafik":
                 
                     st.subheader(
                         "📊 Grafik Penjualan"
