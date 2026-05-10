@@ -679,237 +679,228 @@ else:
                     "Pendapatan berhasil"
                 )
                         # =================================
-        # REKAP HARIAN
-        # =================================
-        elif menu == "Rekap Harian":
-
-            st.subheader("📅 Rekap Harian")
-
-            pendapatan_df = pd.DataFrame(
-                pendapatan_data
-            )
-
-            pengeluaran_df = pd.DataFrame(
-                pengeluaran_data
-            )
-
-            if not pendapatan_df.empty:
-
-                pendapatan_harian = (
-                    pendapatan_df.groupby(
-                        "tanggal"
-                    )["total"].sum()
-                )
-
-                pengeluaran_harian = (
-                    pengeluaran_df.groupby(
-                        "tanggal"
-                    )["harga"].sum()
-                )
-
-                rekap = pd.concat(
-                    [
-                        pendapatan_harian,
-                        pengeluaran_harian
-                    ],
-                    axis=1
-                ).fillna(0)
-
-                rekap.columns = [
-                    "Pendapatan",
-                    "Pengeluaran"
-                ]
-
-                rekap["Keuntungan"] = (
-                    rekap["Pendapatan"]
-                    - rekap["Pengeluaran"]
-                )
-
-                rekap = rekap.reset_index()
-
-                st.markdown("""
-                <div style="
-                    background:white;
-                    padding:20px;
-                    border-radius:20px;
-                    box-shadow:0 4px 15px rgba(0,0,0,0.08);
-                ">
-                    <h3 style='color:#1e3a8a'>
-                    💰 Tabel Rekap Harian
-                    </h3>
-                </div>
-                """, unsafe_allow_html=True)
-
-                st.dataframe(
-                    rekap.style
-                    .format({
-                        "Pendapatan": "Rp {:,.0f}",
-                        "Pengeluaran": "Rp {:,.0f}",
-                        "Keuntungan": "Rp {:,.0f}"
-                    })
-                    .background_gradient(
-                        cmap="Blues",
-                        subset=["Pendapatan"]
+                # REKAP HARIAN
+                # =================================
+                elif menu == "Rekap Harian":
+                
+                    st.subheader("📅 Rekap Harian")
+                
+                    pendapatan_df = pd.DataFrame(
+                        pendapatan_data
                     )
-                    .background_gradient(
-                        cmap="Reds",
-                        subset=["Pengeluaran"]
+                
+                    pengeluaran_df = pd.DataFrame(
+                        pengeluaran_data
                     )
-                    .background_gradient(
-                        cmap="Greens",
-                        subset=["Keuntungan"]
-                    ),
-                    use_container_width=True
-                )
-
-            else:
-
-                st.warning(
-                    "Belum ada data pendapatan"
-                )
-
-        # =================================
-        # REKAP BULANAN
-        # =================================
-        elif menu == "Rekap Bulanan":
-
-            st.subheader("📆 Rekap Bulanan")
-
-            pendapatan_df = pd.DataFrame(
-                pendapatan_data
-            )
-
-            pengeluaran_df = pd.DataFrame(
-                pengeluaran_data
-            )
-
-            if not pendapatan_df.empty:
-
-                pendapatan_df["bulan"] = (
-                    pd.to_datetime(
-                        pendapatan_df["tanggal"]
-                    ).dt.strftime("%B %Y")
-                )
-
-                pengeluaran_df["bulan"] = (
-                    pd.to_datetime(
-                        pengeluaran_df["tanggal"]
-                    ).dt.strftime("%B %Y")
-                )
-
-                pendapatan_bulanan = (
-                    pendapatan_df.groupby(
-                        "bulan"
-                    )["total"].sum()
-                )
-
-                pengeluaran_bulanan = (
-                    pengeluaran_df.groupby(
-                        "bulan"
-                    )["harga"].sum()
-                )
-
-                rekap = pd.concat(
-                    [
-                        pendapatan_bulanan,
-                        pengeluaran_bulanan
-                    ],
-                    axis=1
-                ).fillna(0)
-
-                rekap.columns = [
-                    "Pendapatan",
-                    "Pengeluaran"
-                ]
-
-                rekap["Keuntungan"] = (
-                    rekap["Pendapatan"]
-                    - rekap["Pengeluaran"]
-                )
-
-                rekap = rekap.reset_index()
-
-                st.markdown("""
-                <div style="
-                    background:white;
-                    padding:20px;
-                    border-radius:20px;
-                    box-shadow:0 4px 15px rgba(0,0,0,0.08);
-                ">
-                    <h3 style='color:#1e3a8a'>
-                    📈 Tabel Rekap Bulanan
-                    </h3>
-                </div>
-                """, unsafe_allow_html=True)
-
-                st.dataframe(
-                    rekap.style
-                    .format({
-                        "Pendapatan": "Rp {:,.0f}",
-                        "Pengeluaran": "Rp {:,.0f}",
-                        "Keuntungan": "Rp {:,.0f}"
-                    })
-                    .background_gradient(
-                        cmap="Blues",
-                        subset=["Pendapatan"]
+                
+                    if not pendapatan_df.empty:
+                
+                        pendapatan_harian = (
+                            pendapatan_df.groupby(
+                                "tanggal"
+                            )["total"].sum()
+                        )
+                
+                        pengeluaran_harian = (
+                            pengeluaran_df.groupby(
+                                "tanggal"
+                            )["harga"].sum()
+                        )
+                
+                        rekap = pd.concat(
+                            [
+                                pendapatan_harian,
+                                pengeluaran_harian
+                            ],
+                            axis=1
+                        ).fillna(0)
+                
+                        rekap.columns = [
+                            "Pendapatan",
+                            "Pengeluaran"
+                        ]
+                
+                        rekap["Keuntungan"] = (
+                            rekap["Pendapatan"]
+                            - rekap["Pengeluaran"]
+                        )
+                
+                        rekap = rekap.reset_index()
+                
+                        styled_rekap = (
+                            rekap.style
+                            .format({
+                                "Pendapatan": "Rp {:,.0f}",
+                                "Pengeluaran": "Rp {:,.0f}",
+                                "Keuntungan": "Rp {:,.0f}"
+                            })
+                            .background_gradient(
+                                cmap="Blues",
+                                subset=["Pendapatan"]
+                            )
+                            .background_gradient(
+                                cmap="Reds",
+                                subset=["Pengeluaran"]
+                            )
+                            .background_gradient(
+                                cmap="Greens",
+                                subset=["Keuntungan"]
+                            )
+                        )
+                
+                        st.dataframe(
+                            styled_rekap,
+                            height=500
+                        )
+                
+                    else:
+                
+                        st.warning(
+                            "Belum ada data pendapatan"
+                        )
+                
+                # =================================
+                # REKAP BULANAN
+                # =================================
+                elif menu == "Rekap Bulanan":
+                
+                    st.subheader("📆 Rekap Bulanan")
+                
+                    pendapatan_df = pd.DataFrame(
+                        pendapatan_data
                     )
-                    .background_gradient(
-                        cmap="Reds",
-                        subset=["Pengeluaran"]
+                
+                    pengeluaran_df = pd.DataFrame(
+                        pengeluaran_data
                     )
-                    .background_gradient(
-                        cmap="Greens",
-                        subset=["Keuntungan"]
-                    ),
-                    use_container_width=True
-                )
-
-            else:
-
-                st.warning(
-                    "Belum ada data pendapatan"
-                )
-
-        # =================================
-        # GRAFIK
-        # =================================
-        elif menu == "Grafik":
-
-            st.subheader(
-                "📊 Grafik Penjualan"
-            )
-
-            pendapatan_df = pd.DataFrame(
-                pendapatan_data
-            )
-
-            if not pendapatan_df.empty:
-
-                pendapatan_df["tanggal"] = pd.to_datetime(
-                    pendapatan_df["tanggal"]
-                )
-
-                harian = (
-                    pendapatan_df.groupby(
-                        pendapatan_df["tanggal"].dt.day
-                    )["total"]
-                    .sum()
-                    .reset_index()
-                )
-
-                st.line_chart(
-                    harian.set_index("tanggal")
-                )
-
-                bulanan = (
-                    pendapatan_df.groupby(
-                        pendapatan_df["tanggal"].dt.month
-                    )["total"]
-                    .sum()
-                    .reset_index()
-                )
-
-                st.bar_chart(
-                    bulanan.set_index("tanggal")
-                )
-
+                
+                    if not pendapatan_df.empty:
+                
+                        pendapatan_df["bulan"] = (
+                            pd.to_datetime(
+                                pendapatan_df["tanggal"]
+                            ).dt.strftime("%B %Y")
+                        )
+                
+                        pengeluaran_df["bulan"] = (
+                            pd.to_datetime(
+                                pengeluaran_df["tanggal"]
+                            ).dt.strftime("%B %Y")
+                        )
+                
+                        pendapatan_bulanan = (
+                            pendapatan_df.groupby(
+                                "bulan"
+                            )["total"].sum()
+                        )
+                
+                        pengeluaran_bulanan = (
+                            pengeluaran_df.groupby(
+                                "bulan"
+                            )["harga"].sum()
+                        )
+                
+                        rekap = pd.concat(
+                            [
+                                pendapatan_bulanan,
+                                pengeluaran_bulanan
+                            ],
+                            axis=1
+                        ).fillna(0)
+                
+                        rekap.columns = [
+                            "Pendapatan",
+                            "Pengeluaran"
+                        ]
+                
+                        rekap["Keuntungan"] = (
+                            rekap["Pendapatan"]
+                            - rekap["Pengeluaran"]
+                        )
+                
+                        rekap = rekap.reset_index()
+                
+                        styled_rekap = (
+                            rekap.style
+                            .format({
+                                "Pendapatan": "Rp {:,.0f}",
+                                "Pengeluaran": "Rp {:,.0f}",
+                                "Keuntungan": "Rp {:,.0f}"
+                            })
+                            .background_gradient(
+                                cmap="Blues",
+                                subset=["Pendapatan"]
+                            )
+                            .background_gradient(
+                                cmap="Reds",
+                                subset=["Pengeluaran"]
+                            )
+                            .background_gradient(
+                                cmap="Greens",
+                                subset=["Keuntungan"]
+                            )
+                        )
+                
+                        st.dataframe(
+                            styled_rekap,
+                            height=500
+                        )
+                
+                    else:
+                
+                        st.warning(
+                            "Belum ada data pendapatan"
+                        )
+                
+                # =================================
+                # GRAFIK
+                # =================================
+                elif menu == "Grafik":
+                
+                    st.subheader(
+                        "📊 Grafik Penjualan"
+                    )
+                
+                    pendapatan_df = pd.DataFrame(
+                        pendapatan_data
+                    )
+                
+                    if not pendapatan_df.empty:
+                
+                        pendapatan_df["tanggal"] = pd.to_datetime(
+                            pendapatan_df["tanggal"]
+                        )
+                
+                        harian = (
+                            pendapatan_df.groupby(
+                                pendapatan_df["tanggal"].dt.day
+                            )["total"]
+                            .sum()
+                            .reset_index()
+                        )
+                
+                        st.write("### 📈 Grafik Harian")
+                
+                        st.line_chart(
+                            harian.set_index("tanggal")
+                        )
+                
+                        bulanan = (
+                            pendapatan_df.groupby(
+                                pendapatan_df["tanggal"].dt.month
+                            )["total"]
+                            .sum()
+                            .reset_index()
+                        )
+                
+                        st.write("### 📊 Grafik Bulanan")
+                
+                        st.bar_chart(
+                            bulanan.set_index("tanggal")
+                        )
+                
+                    else:
+                
+                        st.warning(
+                            "Belum ada data grafik"
+                        )
