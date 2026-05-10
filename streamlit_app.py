@@ -845,10 +845,10 @@ else:
                     "Belum ada data pendapatan"
                 )
         
-        # =================================
-        # GRAFIK
-        # =================================
-        elif menu == "Grafik":
+       # =================================
+       # GRAFIK
+       # =================================
+       elif menu == "Grafik":
         
             st.subheader(
                 "📊 Grafik Penjualan"
@@ -864,6 +864,9 @@ else:
                     pendapatan_df["tanggal"]
                 )
         
+                # =========================
+                # GRAFIK HARIAN
+                # =========================
                 harian = (
                     pendapatan_df.groupby(
                         pendapatan_df["tanggal"].dt.day
@@ -872,12 +875,19 @@ else:
                     .reset_index()
                 )
         
-                st.write("### 📈 Grafik Harian")
+                st.markdown("""
+                <h3 style='color:#1e3a8a'>
+                📈 Grafik Pendapatan Harian
+                </h3>
+                """, unsafe_allow_html=True)
         
                 st.line_chart(
                     harian.set_index("tanggal")
                 )
         
+                # =========================
+                # GRAFIK BULANAN
+                # =========================
                 bulanan = (
                     pendapatan_df.groupby(
                         pendapatan_df["tanggal"].dt.month
@@ -886,9 +896,13 @@ else:
                     .reset_index()
                 )
         
-                st.write("### 📊 Grafik Bulanan")
+                st.markdown("""
+                <h3 style='color:#1e3a8a'>
+                📊 Grafik Pendapatan Bulanan
+                </h3>
+                """, unsafe_allow_html=True)
         
-                st.bar_chart(
+                st.line_chart(
                     bulanan.set_index("tanggal")
                 )
         
