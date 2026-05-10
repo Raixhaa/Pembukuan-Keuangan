@@ -478,6 +478,35 @@ else:
             st.write("")
             st.subheader("📋 Daftar Menu")
 
+            st.divider()
+
+            st.subheader("🗑 Hapus Menu")
+            
+            if len(menu_data) > 0:
+            
+                hapus_menu = st.selectbox(
+                    "Pilih menu yang ingin dihapus",
+                    [x["nama"] for x in menu_data]
+                )
+            
+                if st.button("❌ Hapus Menu"):
+            
+                    menu_data = [
+                        x for x in menu_data
+                        if x["nama"] != hapus_menu
+                    ]
+            
+                    save_json(
+                        MENU_FILE,
+                        menu_data
+                    )
+            
+                    st.success(
+                        "Menu berhasil dihapus"
+                    )
+
+        st.rerun()
+
             if len(menu_data) > 0:
 
                 cols = st.columns(3)
