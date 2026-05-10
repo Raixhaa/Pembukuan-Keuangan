@@ -515,7 +515,7 @@ if "selected_menu" not in st.session_state:
 # =========================================
 st.markdown("""
 <style>
-/* 🌈 Light Mode - Warna Menarik & Elegan */
+# /*🌈 Light Mode - Warna Menarik & Elegan */
 .main { 
     background: linear-gradient(135deg, #a8edea 0%, #fed6e3 25%, #ffecd2 50%, #fcb69f 75%, #a8e6cf 100%);
     background-size: 400% 400%;
