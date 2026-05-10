@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import json
 import os
-import plotly.express as px
 from datetime import datetime
 
 # =========================================
@@ -505,7 +504,7 @@ else:
                         "Menu berhasil dihapus"
                     )
 
-        st.rerun()
+                    st.rerun()
 
             if len(menu_data) > 0:
 
@@ -679,3 +678,4 @@ else:
                 st.success(
                     "Pendapatan berhasil"
                 )
+
