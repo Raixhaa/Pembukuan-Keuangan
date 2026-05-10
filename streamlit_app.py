@@ -681,7 +681,7 @@ else:
                         # =================================
                 # REKAP HARIAN
                 # =================================
-                elif menu == "Rekap Harian":
+            elif menu == "Rekap Harian":
                 
                     st.subheader("📅 Rekap Harian")
                 
