@@ -845,10 +845,10 @@ else:
                     "Belum ada data pendapatan"
                 )
         
-       # =================================
-       # GRAFIK
-       # =================================
-       elif menu == "Grafik":
+        # =================================
+        # GRAFIK
+        # =================================
+        elif menu == "Grafik":
         
             st.subheader(
                 "📊 Grafik Penjualan"
