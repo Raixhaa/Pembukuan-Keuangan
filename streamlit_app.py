@@ -762,7 +762,7 @@ else:
                 # =================================
                 # REKAP BULANAN
                 # =================================
-                elif menu == "Rekap Bulanan":
+          elif menu == "Rekap Bulanan":
                 
                     st.subheader("📆 Rekap Bulanan")
                 
