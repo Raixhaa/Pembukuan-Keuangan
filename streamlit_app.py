@@ -83,7 +83,7 @@ if "role" not in st.session_state:
 if "selected_menu" not in st.session_state: 
     st.session_state.selected_menu = "📊 Dashboard"
 if "sidebar_open" not in st.session_state: 
-    st.session_state.sidebar_open = False
+    st.session_state.sidebar_open = True
 
 # =========================================
 # 🎨 FIXED CSS - MENU NAVIGASI BISA DIKLIK
@@ -152,10 +152,6 @@ html, body, [data-testid="stAppViewContainer"] {
     padding: 2.2rem;
     transition: all 0.3s ease;
     box-shadow: 0 10px 30px rgba(0,0,0,0.06);
-    height: 160px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
 }
 
 .metric-card:hover {
@@ -166,7 +162,7 @@ html, body, [data-testid="stAppViewContainer"] {
 
 .metric-title {color: #64748b; font-weight: 600; font-size: 1.1rem; margin-bottom: 10px;}
 .metric-value {
-    font-size: 2.5rem !important;
+    font-size: 3rem !important;
     font-weight: 800 !important;
     background: linear-gradient(135deg, #1e293b, #334155);
     -webkit-background-clip: text !important;
@@ -278,14 +274,13 @@ if not st.session_state.login:
             st.error("❌ Username atau password salah!")
 
 else:
-    # FIXED: Load data ONCE after login
+    # DATA
     users = load_json(USER_FILE, DEFAULT_USERS)
     menu_data = load_json(MENU_FILE, DEFAULT_MENU)
     pengeluaran_data = load_json(PENGELUARAN_FILE, [])
     pendapatan_data = load_json(PENDAPATAN_FILE, [])
     karyawan_data = load_json(KARYAWAN_FILE, [])
     
-    # FIXED: Safe calculations
     total_pendapatan = sum(float(d.get("total", 0)) for d in pendapatan_data)
     total_pengeluaran = sum(float(d.get("harga", 0)) for d in pengeluaran_data)
     total_gaji = sum(float(d.get("gaji", 0)) for d in karyawan_data)
@@ -297,16 +292,13 @@ else:
         if not st.session_state.sidebar_open:
             if st.button("📱 Menu", key="open_menu_btn"):
                 st.session_state.sidebar_open = True
-                st.rerun()
     with top_col2:
         st.markdown(f"👋 Selamat datang, **{st.session_state.username}**!", unsafe_allow_html=True)
     with top_col3:
         if st.button("🚪 Keluar", key="logout_btn"):
-            # FIXED: Proper logout
             for key in list(st.session_state.keys()):
-                delattr(st.session_state, key)
+                del st.session_state[key]
             st.session_state.login = False
-            st.session_state.sidebar_open = False
             st.rerun()
 
     # FIXED SIDEBAR - MENU NAVIGASI
@@ -315,7 +307,6 @@ else:
             # Tutup menu button
             if st.button("❌ Tutup Menu", key="close_menu"):
                 st.session_state.sidebar_open = False
-                st.rerun()
 
             # User info card
             st.markdown(f"""
@@ -335,11 +326,11 @@ else:
             st.metric("💸 Pengeluaran", format_currency(total_pengeluaran))
             st.metric("💚 Keuntungan", format_currency(keuntungan))
 
-            # FIXED MENU OPTIONS - Role-based and consistent
+            # MENU OPTIONS
             if st.session_state.role == "host":
                 menu_options = [
                     "📊 Dashboard",
-                    "🍹 Menu Jualan", 
+                    "🍹 Menu Jualan",
                     "💰 Pendapatan",
                     "💸 Pengeluaran",
                     "👥 Karyawan",
@@ -348,21 +339,20 @@ else:
             else:
                 menu_options = [
                     "💰 Pendapatan",
-                    "💸 Pengeluaran", 
-                    "📈 Laporan"
+                    "💸 Pengeluaran",
+                    "📈 Laporan Harian"
                 ]
             
-            # FIXED: Ensure selected_menu is always valid
+            # Ensure selected_menu is valid for current role
             if st.session_state.selected_menu not in menu_options:
-                st.session_state.selected_menu = menu_options[0]
+                st.session_state.selected_menu = "📊 Dashboard"
 
             selected = st.radio("📋 Pilih Menu:", menu_options, 
                               key="sidebar_menu", 
-                              index=menu_options.index(st.session_state.selected_menu))
+                              index=menu_options.index(st.session_state.selected_menu) if st.session_state.selected_menu in menu_options else 0)
 
             if selected != st.session_state.selected_menu:
                 st.session_state.selected_menu = selected
-                st.rerun()
 
     # MAIN CONTENT TITLE
     st.markdown(f"<div class='big-title'>{st.session_state.selected_menu}</div>", unsafe_allow_html=True)
@@ -404,7 +394,6 @@ else:
                 menu_data.append({"nama": nama, "harga_1": float(harga1), "harga_2": float(harga2), "stok": 50})
                 save_json(MENU_FILE, menu_data)
                 st.success("✅ Menu ditambahkan!")
-                st.rerun()
             else:
                 st.error("❌ Nama menu tidak boleh kosong!")
 
@@ -431,27 +420,27 @@ else:
             try:
                 menu = next(m for m in menu_data if m["nama"] == menu_pilih)
                 
-                # FIXED: Proper price calculation
-                harga_1 = float(menu["harga_1"])
-                harga_2 = float(menu["harga_2"])
+                # Auto-calculate price based on quantity with proper menu connection
+                harga_1 = float(menu["harga_1"])  # Price for 1 item
+                harga_2 = float(menu["harga_2"])  # Price for 2 items
                 
                 if jumlah == 1:
                     total = harga_1
                     ukuran = "1 Gelas"
                 elif jumlah == 2:
-                    total = harga_2
+                    total = harga_2  # Use the 2-item price
                     ukuran = "2 Gelas"
                 else:
-                    # For 3+ items: pairs of 2 + remaining singles
+                    # For 3+ items: calculate as pairs of 2-item price + remaining single items
                     pairs = jumlah // 2
                     singles = jumlah % 2
                     total = (harga_2 * pairs) + (harga_1 * singles)
-                    ukuran = f"{jumlah} Gelas"
+                    ukuran = f"{jumlah} Item"
                 
                 harga_per_item = total / jumlah
                 
-                st.success(f"💰 **Harga per gelas: {format_currency(harga_per_item)}**")
-                st.success(f"💰 **Total ({jumlah} gelas): {format_currency(total)}**")
+                st.success(f"💰 **Harga per item: {format_currency(harga_per_item)}**")
+                st.success(f"💰 **Total ({jumlah} item): {format_currency(total)}**")
                 
                 if st.button("✅ Simpan Penjualan", use_container_width=True):
                     pendapatan_data.append({
@@ -465,7 +454,6 @@ else:
                     })
                     save_json(PENDAPATAN_FILE, pendapatan_data)
                     st.success("✅ Penjualan tersimpan!")
-                    st.rerun()
                     
             except StopIteration:
                 st.error("❌ Menu tidak ditemukan!")
@@ -479,11 +467,12 @@ else:
             df["total"] = df["total"].apply(format_currency)
             df["harga_per_gelas"] = df["harga_per_gelas"].apply(format_currency)
             
-            # FIXED: Safe column handling
+            # Handle missing columns safely
             display_cols = ["tanggal", "menu", "ukuran", "jumlah", "harga_per_gelas", "total", "oleh"]
             available_cols = [col for col in display_cols if col in df.columns]
-            df_display = df[available_cols].copy()
+            df_display = df[available_cols]
             
+            # Set column names
             col_names = ["Tanggal", "Menu", "Ukuran", "Jumlah", "Harga/Gelas", "Total", "Oleh"]
             df_display.columns = col_names[:len(available_cols)]
             
@@ -499,7 +488,7 @@ else:
         with col3: harga = st.number_input("Harga", min_value=0.0, value=0.0, step=1000.0, key="exp_harga")
         
         if st.button("💸 Simpan Pengeluaran", use_container_width=True):
-            if barang.strip():
+            if barang.strip():  # Validate input
                 pengeluaran_data.append({
                     "tanggal": tanggal.strftime("%Y-%m-%d"),
                     "barang": barang,
@@ -508,7 +497,6 @@ else:
                 })
                 save_json(PENGELUARAN_FILE, pengeluaran_data)
                 st.success("✅ Pengeluaran tersimpan!")
-                st.rerun()
             else:
                 st.error("❌ Nama barang tidak boleh kosong!")
 
@@ -537,7 +525,6 @@ else:
                 save_json(USER_FILE, users)
                 save_json(KARYAWAN_FILE, karyawan_data)
                 st.success(f"✅ Akun {username} berhasil dibuat!")
-                st.rerun()
             elif not username.strip():
                 st.error("❌ Username tidak boleh kosong!")
             else:
@@ -551,7 +538,7 @@ else:
         else:
             st.info("📝 Belum ada karyawan")
 
-    elif st.session_state.selected_menu in ["📈 Laporan", "📈 Laporan"]:
+    elif st.session_state.selected_menu in ["📈 Laporan", "📈 Laporan Harian"]:
         st.header("📊 Laporan Keuangan")
         
         if pendapatan_data:
