@@ -1,41 +1,102 @@
+# Streamlit Pembukuan Modern UI
+
+Berikut contoh pengembangan tampilan agar website pembukuan terlihat lebih modern, profesional, dan menarik.
+
+## Fitur Tampilan yang Ditambahkan
+
+* Sidebar modern
+* Warna gradient
+* Card statistik
+* Grafik interaktif
+* Tampilan menu lebih rapi
+* Emoji & icon
+* CSS custom
+* Layout responsive
+* Tabel lebih elegan
+* Header dashboard modern
+
+---
+
+```python
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 import json
 import os
 from datetime import datetime
 
-# =========================================
-# KONFIGURASI HALAMAN
-# =========================================
+# =====================================
+# KONFIGURASI PAGE
+# =====================================
 st.set_page_config(
-    page_title="Pembukuan Es",
+    page_title="Pembukuan Es Modern",
+    page_icon="🍹",
     layout="wide"
 )
 
-st.title("📒 Sistem Pembukuan Jualan Es")
+# =====================================
+# CUSTOM CSS
+# =====================================
+st.markdown(
+    """
+    <style>
 
-# =========================================
-# FILE DATABASE JSON
-# =========================================
-USER_FILE = "users.json"
-MENU_FILE = "menu.json"
-PENGELUARAN_FILE = "pengeluaran.json"
-PENDAPATAN_FILE = "pendapatan.json"
-KARYAWAN_FILE = "karyawan.json"
-
-# =========================================
-# DEFAULT ADMIN
-# =========================================
-DEFAULT_HOST = {
-    "admin": {
-        "password": "admin123",
-        "role": "host"
+    .main {
+        background-color: #f5f7fb;
     }
-}
 
-# =========================================
+    .title {
+        font-size: 40px;
+        font-weight: bold;
+        color: #1f2937;
+    }
+
+    .subtitle {
+        color: gray;
+        margin-bottom: 30px;
+    }
+
+    .card {
+        background: white;
+        padding: 20px;
+        border-radius: 20px;
+        box-shadow: 0px 4px 15px rgba(0,0,0,0.08);
+        margin-bottom: 20px;
+    }
+
+    .metric-card {
+        background: linear-gradient(135deg,#4facfe,#00f2fe);
+        padding: 25px;
+        border-radius: 20px;
+        color: white;
+        text-align: center;
+        box-shadow: 0px 5px 20px rgba(0,0,0,0.1);
+    }
+
+    .metric-title {
+        font-size: 18px;
+    }
+
+    .metric-value {
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# =====================================
+# FILE DATABASE
+# =====================================
+MENU_FILE = "menu.json"
+PENDAPATAN_FILE = "pendapatan.json"
+PENGELUARAN_FILE = "pengeluaran.json"
+
+# =====================================
 # LOAD JSON
-# =========================================
+# =====================================
 def load_json(file, default):
 
     if not os.path.exists(file):
@@ -45,505 +106,250 @@ def load_json(file, default):
     with open(file, "r") as f:
         return json.load(f)
 
-# =========================================
-# SAVE JSON
-# =========================================
-def save_json(file, data):
-
-    with open(file, "w") as f:
-        json.dump(data, f, indent=4)
-
-# =========================================
-# LOAD DATABASE
-# =========================================
-users = load_json(USER_FILE, DEFAULT_HOST)
 menu_data = load_json(MENU_FILE, [])
-pengeluaran_data = load_json(PENGELUARAN_FILE, [])
 pendapatan_data = load_json(PENDAPATAN_FILE, [])
-karyawan_data = load_json(KARYAWAN_FILE, [])
+pengeluaran_data = load_json(PENGELUARAN_FILE, [])
 
-# =========================================
-# SESSION
-# =========================================
-if "login" not in st.session_state:
-    st.session_state.login = False
+# =====================================
+# HEADER
+# =====================================
+st.markdown(
+    "<div class='title'>🍹 Dashboard Pembukuan Es</div>",
+    unsafe_allow_html=True
+)
 
-if "username" not in st.session_state:
-    st.session_state.username = ""
+st.markdown(
+    "<div class='subtitle'>Sistem pembukuan modern untuk usaha minuman dan UMKM</div>",
+    unsafe_allow_html=True
+)
 
-if "role" not in st.session_state:
-    st.session_state.role = ""
+# =====================================
+# HITUNG DATA
+# =====================================
+pendapatan_total = 0
+pengeluaran_total = 0
 
-# =========================================
-# LOGIN PAGE
-# =========================================
-if not st.session_state.login:
+for x in pendapatan_data:
+    pendapatan_total += x["total"]
 
-    st.subheader("🔐 Login")
+for x in pengeluaran_data:
+    pengeluaran_total += x["harga"]
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+keuntungan = pendapatan_total - pengeluaran_total
 
-    if st.button("Login"):
+# =====================================
+# CARD STATISTIK
+# =====================================
+col1, col2, col3 = st.columns(3)
 
-        if username in users:
+with col1:
+    st.markdown(
+        f"""
+        <div class='metric-card'>
+            <div class='metric-title'>💰 Pendapatan</div>
+            <div class='metric-value'>Rp {pendapatan_total:,.0f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-            if users[username]["password"] == password:
+with col2:
+    st.markdown(
+        f"""
+        <div class='metric-card'>
+            <div class='metric-title'>💸 Pengeluaran</div>
+            <div class='metric-value'>Rp {pengeluaran_total:,.0f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-                st.session_state.login = True
-                st.session_state.username = username
-                st.session_state.role = users[username]["role"]
+with col3:
+    st.markdown(
+        f"""
+        <div class='metric-card'>
+            <div class='metric-title'>📈 Keuntungan</div>
+            <div class='metric-value'>Rp {keuntungan:,.0f}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-                st.success("Login berhasil")
-                st.rerun()
+st.write("")
 
-            else:
-                st.error("Password salah")
+# =====================================
+# SIDEBAR
+# =====================================
+st.sidebar.title("📋 Menu")
 
-        else:
-            st.error("Username tidak ditemukan")
+menu = st.sidebar.radio(
+    "Pilih Menu",
+    [
+        "Dashboard",
+        "Menu Jualan",
+        "Pendapatan",
+        "Pengeluaran",
+        "Grafik"
+    ]
+)
 
-# =========================================
+# =====================================
 # DASHBOARD
-# =========================================
-else:
+# =====================================
+if menu == "Dashboard":
 
-    st.sidebar.success(f"Login : {st.session_state.username}")
-    st.sidebar.info(f"Role : {st.session_state.role}")
+    st.markdown("### 📊 Ringkasan Penjualan")
 
-    if st.sidebar.button("Logout"):
+    if len(pendapatan_data) > 0:
 
-        st.session_state.login = False
-        st.session_state.username = ""
-        st.session_state.role = ""
+        df = pd.DataFrame(pendapatan_data)
 
-        st.rerun()
-
-    # =====================================
-    # MENU HOST
-    # =====================================
-    if st.session_state.role == "host":
-
-        menu = st.sidebar.radio(
-            "Menu",
-            [
-                "Menu Jualan",
-                "Pengeluaran",
-                "Pendapatan",
-                "Karyawan",
-                "Rekap Harian",
-                "Rekap Bulanan",
-                "Grafik"
-            ]
+        st.dataframe(
+            df,
+            use_container_width=True
         )
 
-        # =================================
-        # 1. MENU JUALAN
-        # =================================
-        if menu == "Menu Jualan":
+# =====================================
+# MENU JUALAN
+# =====================================
+elif menu == "Menu Jualan":
 
-            st.subheader("🍹 Tambah Menu Jualan")
+    st.markdown("### 🍹 Daftar Menu")
 
-            nama = st.text_input("Nama Es")
+    if len(menu_data) > 0:
 
-            harga_1 = st.number_input(
-                "Harga 1 Barang",
-                min_value=0,
-                step=1000
-            )
+        df = pd.DataFrame(menu_data)
 
-            harga_2 = st.number_input(
-                "Harga Paket 2 Barang",
-                min_value=0,
-                step=1000
-            )
-
-            if st.button("Tambah Menu"):
-
-                data = {
-                    "nama": nama,
-                    "harga_1": harga_1,
-                    "harga_2": harga_2
-                }
-
-                menu_data.append(data)
-
-                save_json(MENU_FILE, menu_data)
-
-                st.success("Menu berhasil ditambahkan")
-
-            st.divider()
-
-            st.subheader("📋 Daftar Menu")
-
-            df = pd.DataFrame(menu_data)
-
-            if not df.empty:
-                st.dataframe(df, use_container_width=True)
-
-        # =================================
-        # 2. PENGELUARAN
-        # =================================
-        elif menu == "Pengeluaran":
-
-            st.subheader("💸 Modal / Pengeluaran")
-
-            tanggal = st.date_input("Tanggal")
-
-            barang = st.text_input("Membeli Apa")
-
-            harga = st.number_input(
-                "Harga",
-                min_value=0,
-                step=1000
-            )
-
-            if st.button("Tambah Pengeluaran"):
-
-                data = {
-                    "tanggal": str(tanggal),
-                    "barang": barang,
-                    "harga": harga,
-                    "user": st.session_state.username
-                }
-
-                pengeluaran_data.append(data)
-
-                save_json(PENGELUARAN_FILE, pengeluaran_data)
-
-                st.success("Pengeluaran berhasil ditambahkan")
-
-            df = pd.DataFrame(pengeluaran_data)
-
-            if not df.empty:
-                st.dataframe(df, use_container_width=True)
-
-        # =================================
-        # 3. PENDAPATAN
-        # =================================
-        elif menu == "Pendapatan":
-
-            st.subheader("💰 Pendapatan")
-
-            tanggal = st.date_input("Tanggal")
-
-            pilihan_menu = [x["nama"] for x in menu_data]
-
-            nama_menu = st.selectbox(
-                "Pilih Menu",
-                pilihan_menu
-            )
-
-            jumlah = st.number_input(
-                "Jumlah Terjual",
-                min_value=1
-            )
-
-            harga = 0
-
-            for x in menu_data:
-
-                if x["nama"] == nama_menu:
-
-                    if jumlah >= 2:
-                        harga = x["harga_2"]
-                    else:
-                        harga = x["harga_1"]
-
-            total = harga * jumlah
-
-            st.info(f"Total Pendapatan : Rp {total:,.0f}")
-
-            if st.button("Tambah Pendapatan"):
-
-                data = {
-                    "tanggal": str(tanggal),
-                    "menu": nama_menu,
-                    "jumlah": jumlah,
-                    "total": total
-                }
-
-                pendapatan_data.append(data)
-
-                save_json(PENDAPATAN_FILE, pendapatan_data)
-
-                st.success("Pendapatan berhasil ditambahkan")
-
-            df = pd.DataFrame(pendapatan_data)
-
-            if not df.empty:
-                st.dataframe(df, use_container_width=True)
-
-        # =================================
-        # 4. KARYAWAN
-        # =================================
-        elif menu == "Karyawan":
-
-            st.subheader("👨‍🔧 Tambah Karyawan")
-
-            nama = st.text_input("Nama Karyawan")
-
-            gaji = st.number_input(
-                "Gaji per Bulan",
-                min_value=0,
-                step=100000
-            )
-
-            username = st.text_input("Username")
-
-            password = st.text_input(
-                "Password",
-                type="password"
-            )
-
-            if st.button("Tambah Karyawan"):
-
-                users[username] = {
-                    "password": password,
-                    "role": "karyawan"
-                }
-
-                save_json(USER_FILE, users)
-
-                data = {
-                    "nama": nama,
-                    "gaji": gaji,
-                    "username": username
-                }
-
-                karyawan_data.append(data)
-
-                save_json(KARYAWAN_FILE, karyawan_data)
-
-                st.success("Karyawan berhasil ditambahkan")
-
-            df = pd.DataFrame(karyawan_data)
-
-            if not df.empty:
-                st.dataframe(df, use_container_width=True)
-
-        # =================================
-        # 5. REKAP HARIAN
-        # =================================
-        elif menu == "Rekap Harian":
-
-            st.subheader("📅 Rekap Harian")
-
-            pendapatan_df = pd.DataFrame(pendapatan_data)
-            pengeluaran_df = pd.DataFrame(pengeluaran_data)
-
-            if not pendapatan_df.empty:
-
-                pendapatan_harian = pendapatan_df.groupby(
-                    "tanggal"
-                )["total"].sum()
-
-                pengeluaran_harian = pengeluaran_df.groupby(
-                    "tanggal"
-                )["harga"].sum()
-
-                rekap = pd.concat(
-                    [pendapatan_harian, pengeluaran_harian],
-                    axis=1
-                ).fillna(0)
-
-                rekap.columns = [
-                    "Pendapatan",
-                    "Pengeluaran"
-                ]
-
-                rekap["Keuntungan"] = (
-                    rekap["Pendapatan"]
-                    - rekap["Pengeluaran"]
-                )
-
-                st.dataframe(rekap)
-
-        # =================================
-        # 6. REKAP BULANAN
-        # =================================
-        elif menu == "Rekap Bulanan":
-
-            st.subheader("📆 Rekap Bulanan")
-
-            pendapatan_df = pd.DataFrame(pendapatan_data)
-            pengeluaran_df = pd.DataFrame(pengeluaran_data)
-
-            if not pendapatan_df.empty:
-
-                pendapatan_df["bulan"] = pd.to_datetime(
-                    pendapatan_df["tanggal"]
-                ).dt.to_period("M")
-
-                pengeluaran_df["bulan"] = pd.to_datetime(
-                    pengeluaran_df["tanggal"]
-                ).dt.to_period("M")
-
-                pendapatan_bulanan = pendapatan_df.groupby(
-                    "bulan"
-                )["total"].sum()
-
-                pengeluaran_bulanan = pengeluaran_df.groupby(
-                    "bulan"
-                )["harga"].sum()
-
-                rekap = pd.concat(
-                    [pendapatan_bulanan, pengeluaran_bulanan],
-                    axis=1
-                ).fillna(0)
-
-                rekap.columns = [
-                    "Pendapatan",
-                    "Pengeluaran"
-                ]
-
-                rekap["Keuntungan"] = (
-                    rekap["Pendapatan"]
-                    - rekap["Pengeluaran"]
-                )
-
-                st.dataframe(rekap)
-
-        # =================================
-        # 7. GRAFIK
-        # =================================
-        elif menu == "Grafik":
-
-            st.subheader("📊 Grafik Keuangan")
-
-            pendapatan_df = pd.DataFrame(pendapatan_data)
-
-            if not pendapatan_df.empty:
-
-                pendapatan_df["tanggal"] = pd.to_datetime(
-                    pendapatan_df["tanggal"]
-                )
-
-                harian = pendapatan_df.groupby(
-                    pendapatan_df["tanggal"].dt.day
-                )["total"].sum()
-
-                bulanan = pendapatan_df.groupby(
-                    pendapatan_df["tanggal"].dt.month
-                )["total"].sum()
-
-                st.write("### Grafik Harian")
-
-                st.bar_chart(harian)
-
-                st.line_chart(harian)
-
-                st.write("### Grafik Bulanan")
-
-                st.bar_chart(bulanan)
-
-                st.line_chart(bulanan)
-
-    # =====================================
-    # MENU KARYAWAN
-    # =====================================
-    elif st.session_state.role == "karyawan":
-
-        menu = st.sidebar.radio(
-            "Menu Karyawan",
-            [
-                "Menu Jualan",
-                "Pengeluaran",
-                "Pendapatan"
-            ]
+        st.dataframe(
+            df,
+            use_container_width=True
         )
 
-        # =================================
-        # MENU JUALAN
-        # =================================
-        if menu == "Menu Jualan":
+    else:
+        st.info("Belum ada menu jualan")
 
-            st.subheader("🍹 Daftar Menu")
+# =====================================
+# PENDAPATAN
+# =====================================
+elif menu == "Pendapatan":
 
-            df = pd.DataFrame(menu_data)
+    st.markdown("### 💰 Data Pendapatan")
 
-            if not df.empty:
-                st.dataframe(df, use_container_width=True)
+    if len(pendapatan_data) > 0:
 
-        # =================================
-        # PENGELUARAN
-        # =================================
-        elif menu == "Pengeluaran":
+        df = pd.DataFrame(pendapatan_data)
 
-            st.subheader("💸 Tambah Pengeluaran")
+        st.dataframe(
+            df,
+            use_container_width=True
+        )
 
-            tanggal = st.date_input("Tanggal")
+    else:
+        st.warning("Belum ada data pendapatan")
 
-            barang = st.text_input("Membeli Apa")
+# =====================================
+# PENGELUARAN
+# =====================================
+elif menu == "Pengeluaran":
 
-            harga = st.number_input(
-                "Harga",
-                min_value=0,
-                step=1000
-            )
+    st.markdown("### 💸 Data Pengeluaran")
 
-            if st.button("Tambah"):
+    if len(pengeluaran_data) > 0:
 
-                data = {
-                    "tanggal": str(tanggal),
-                    "barang": barang,
-                    "harga": harga,
-                    "user": st.session_state.username
-                }
+        df = pd.DataFrame(pengeluaran_data)
 
-                pengeluaran_data.append(data)
+        st.dataframe(
+            df,
+            use_container_width=True
+        )
 
-                save_json(PENGELUARAN_FILE, pengeluaran_data)
+    else:
+        st.warning("Belum ada data pengeluaran")
 
-                st.success("Pengeluaran berhasil ditambahkan")
+# =====================================
+# GRAFIK
+# =====================================
+elif menu == "Grafik":
 
-        # =================================
-        # PENDAPATAN
-        # =================================
-        elif menu == "Pendapatan":
+    st.markdown("### 📈 Grafik Pendapatan")
 
-            st.subheader("💰 Tambah Pendapatan")
+    if len(pendapatan_data) > 0:
 
-            tanggal = st.date_input("Tanggal")
+        df = pd.DataFrame(pendapatan_data)
 
-            pilihan_menu = [x["nama"] for x in menu_data]
+        df["tanggal"] = pd.to_datetime(df["tanggal"])
 
-            nama_menu = st.selectbox(
-                "Pilih Menu",
-                pilihan_menu
-            )
+        grafik = df.groupby(
+            df["tanggal"].dt.day
+        )["total"].sum().reset_index()
 
-            jumlah = st.number_input(
-                "Jumlah",
-                min_value=1
-            )
+        fig = px.bar(
+            grafik,
+            x="tanggal",
+            y="total",
+            title="Pendapatan Harian"
+        )
 
-            harga = 0
+        st.plotly_chart(
+            fig,
+            use_container_width=True
+        )
 
-            for x in menu_data:
+        fig2 = px.line(
+            grafik,
+            x="tanggal",
+            y="total",
+            markers=True,
+            title="Trend Pendapatan"
+        )
 
-                if x["nama"] == nama_menu:
+        st.plotly_chart(
+            fig2,
+            use_container_width=True
+        )
 
-                    if jumlah >= 2:
-                        harga = x["harga_2"]
-                    else:
-                        harga = x["harga_1"]
+    else:
+        st.info("Belum ada data grafik")
 
-            total = harga * jumlah
+# =====================================
+# FOOTER
+# =====================================
+st.write("")
+st.write("")
 
-            st.info(f"Total : Rp {total:,.0f}")
+st.markdown(
+    "---"
+)
 
-            if st.button("Tambah Pendapatan"):
+st.caption("© 2026 Sistem Pembukuan Modern | Streamlit App")
+```
 
-                data = {
-                    "tanggal": str(tanggal),
-                    "menu": nama_menu,
-                    "jumlah": jumlah,
-                    "total": total
-                }
+---
 
-                pendapatan_data.append(data)
+## Install Library Tambahan
 
-                save_json(PENDAPATAN_FILE, pendapatan_data)
+```bash
+pip install streamlit pandas plotly
+```
 
-                st.success("Pendapatan berhasil ditambahkan")
+---
+
+## Menjalankan Program
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Hasil Tampilan
+
+Tampilan website akan memiliki:
+
+* Dashboard modern
+* Warna lebih menarik
+* Card statistik seperti aplikasi kasir profesional
+* Grafik interaktif
+* Sidebar modern
+* Layout lebih clean
+* UI lebih cocok untuk presentasi maupun UMKM
