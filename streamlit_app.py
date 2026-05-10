@@ -26,7 +26,6 @@ DEFAULT_MENU = [
 ]
 
 # UTILITIES
-@st.cache_data
 def load_json(file_path, default_data):
     if not os.path.exists(file_path):
         os.makedirs(os.path.dirname(file_path) if os.path.dirname(file_path) else '.', exist_ok=True)
@@ -81,17 +80,17 @@ html, body, [data-testid="stAppViewContainer"] {background: linear-gradient(-45d
 @keyframes gradientBG {0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 .main {background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.2); margin: 20px; padding: 30px;}
 .stAppViewContainer {padding-top: 2rem;}
-.big-title {font-size: 4rem !important; font-weight: 900 !important; background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f093fb, #f9ca24); -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; text-align: center !important; text-shadow: 0 10px 30px rgba(0,0,0,0.3);}
-.metric-card {background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.8)); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); border-radius: 25px; padding: 2.5rem; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.15); transition: all 0.3s ease; position: relative; overflow: hidden;}
+.big-title {font-size: 4rem !important; font-weight: 900 !important; background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #f093fb, #f9ca24); -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;}
+.metric-card {background: linear-gradient(135deg, rgba(255,255,255,0.9), rgba(248,250,252,0.8)); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.5); border-radius: 25px; padding: 2.5rem; position: relative; overflow: hidden; transition: all 0.3s ease;}
 .metric-card:hover {transform: translateY(-10px) scale(1.02); box-shadow: 0 30px 60px rgba(0,0,0,0.25);}
-.metric-card::before {content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 0.5s;}
+.metric-card::before {content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent); transition: left 0.5s ease;}
 .metric-card:hover::before {left: 100%;}
 .metric-title {color: #64748b; font-weight: 600; font-size: 1.1rem; margin-bottom: 10px;}
 .metric-value {font-size: 3rem !important; font-weight: 800 !important; background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1); -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important;}
-button[kind="primary"] {background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1) !important; border-radius: 20px !important; height: 50px !important; font-weight: 700 !important; box-shadow: 0 10px 30px rgba(255,107,107,0.4) !important;}
+button[kind="primary"] {background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #45b7d1) !important; border-radius: 20px !important; height: 50px !important; font-weight: 700 !important; box-shadow: 0 10px 25px rgba(255,107,107,0.3) !important;}
 button[kind="primary"]:hover {transform: translateY(-2px) !important; box-shadow: 0 15px 40px rgba(255,107,107,0.5) !important;}
-[data-testid="stSidebar"] {background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)) !important; backdrop-filter: blur(25px) !important; border-radius: 20px !important; box-shadow: 10px 0 40px rgba(0,0,0,0.1) !important;}
-.stTextInput > div > div > input, .stNumberInput > div > div > input, .stDateInput > div > div > input {border-radius: 15px !important; border: 2px solid #e2e8f0 !important; padding: 12px 16px !important; background: rgba(255,255,255,0.9) !important;}
+[data-testid="stSidebar"] {background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)) !important; backdrop-filter: blur(25px) !important; border-radius: 20px !important; box-shadow: 0 15px 40px rgba(0,0,0,0.1) !important;}
+.stTextInput > div > div > input, .stNumberInput > div > div > input, .stDateInput > div > div > input {border-radius: 15px !important; border: 2px solid #e2e8f0 !important; padding: 12px 16px !important;}
 .stSelectbox > div > div > div, .stNumberInput > div > div > div {border-radius: 15px !important; border: 2px solid #e2e8f0 !important;}
 [data-testid="stDataFrame"] {border-radius: 20px !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;}
 .stMetric > label {font-size: 1.1rem !important; font-weight: 600 !important; color: #64748b !important;}
@@ -125,6 +124,13 @@ if not st.session_state.login:
 # MAIN DASHBOARD
 # =========================================
 else:
+    # RELOAD DATA ON EACH RUN
+    users = load_json(USER_FILE, DEFAULT_USERS)
+    menu_data = load_json(MENU_FILE, DEFAULT_MENU)
+    pengeluaran_data = load_json(PENGELUARAN_FILE, [])
+    pendapatan_data = load_json(PENDAPATAN_FILE, [])
+    karyawan_data = load_json(KARYAWAN_FILE, [])
+    
     # CALCULATE TOTALS
     total_pendapatan = sum(d.get("total", 0) for d in pendapatan_data)
     total_pengeluaran = sum(d.get("harga", 0) for d in pengeluaran_data)
@@ -247,10 +253,13 @@ else:
         with col3: harga2 = st.number_input("Harga 2 Gelas", min_value=2000, value=5000)
         
         if st.button("💾 Tambah Menu", use_container_width=True):
-            menu_data.append({"nama": nama, "harga_1": harga1, "harga_2": harga2, "stok": 50})
-            save_json(MENU_FILE, menu_data)
-            st.success("✅ Menu ditambahkan!")
-            st.rerun()
+            if nama.strip():  # Validate input
+                menu_data.append({"nama": nama, "harga_1": harga1, "harga_2": harga2, "stok": 50})
+                save_json(MENU_FILE, menu_data)
+                st.success("✅ Menu ditambahkan!")
+                st.rerun()
+            else:
+                st.error("❌ Nama menu tidak boleh kosong!")
 
         st.header("📋 Daftar Menu")
         if menu_data:
@@ -262,24 +271,29 @@ else:
 
     elif st.session_state.selected_menu == "💰 Pendapatan":
         st.header("➕ Input Penjualan")
-        col1, col2, col3 = st.columns(3)
+        col1, col2, col3, col4 = st.columns(4)
         with col1: 
             menu_options = [""] + [m["nama"] for m in menu_data]
             menu_pilih = st.selectbox("Menu", menu_options)
-        with col2: jumlah = st.number_input("Jumlah Gelas", min_value=1, value=1, step=1)
-        with col3: tanggal = st.date_input("Tanggal", value=date.today())
+        with col2: 
+            gelas_size = st.radio("Ukuran Gelas", ["1 Gelas", "2 Gelas"], horizontal=True)
+        with col3: 
+            jumlah = st.number_input("Jumlah", min_value=1, value=1, step=1)
+        with col4: 
+            tanggal = st.date_input("Tanggal", value=date.today())
         
         if menu_pilih:
             menu = next(m for m in menu_data if m["nama"] == menu_pilih)
-            harga_per_gelas = menu["harga_1"]
+            harga_per_gelas = menu["harga_1"] if gelas_size == "1 Gelas" else menu["harga_2"]
             total = harga_per_gelas * jumlah
             st.success(f"💰 **Harga per gelas: {format_currency(harga_per_gelas)}**")
-            st.success(f"💰 **Total ({jumlah} gelas): {format_currency(total)}**")
+            st.success(f"💰 **Total ({jumlah} x {gelas_size}): {format_currency(total)}**")
             
             if st.button("✅ Simpan Penjualan", use_container_width=True):
                 pendapatan_data.append({
                     "tanggal": tanggal.strftime("%Y-%m-%d"),
                     "menu": menu_pilih,
+                    "ukuran": gelas_size,
                     "jumlah": jumlah,
                     "harga_per_gelas": harga_per_gelas,
                     "total": total,
@@ -295,8 +309,9 @@ else:
             df["tanggal"] = df["tanggal"].apply(format_date)
             df["total"] = df["total"].apply(format_currency)
             df["harga_per_gelas"] = df["harga_per_gelas"].apply(format_currency)
-            df = df[["tanggal", "menu", "jumlah", "harga_per_gelas", "total", "oleh"]]
-            df.columns = ["Tanggal", "Menu", "Jumlah", "Harga/Gelas", "Total", "Oleh"]
+            display_cols = ["tanggal", "menu", "ukuran", "jumlah", "harga_per_gelas", "total", "oleh"] if "ukuran" in df.columns else ["tanggal", "menu", "jumlah", "harga_per_gelas", "total", "oleh"]
+            df = df[display_cols]
+            df.columns = ["Tanggal", "Menu", "Ukuran", "Jumlah", "Harga/Gelas", "Total", "Oleh"] if "Ukuran" in df.columns else ["Tanggal", "Menu", "Jumlah", "Harga/Gelas", "Total", "Oleh"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
             st.info("📝 Belum ada data penjualan")
@@ -309,15 +324,18 @@ else:
         with col3: harga = st.number_input("Harga", min_value=0.0, value=0.0, step=1000.0)
         
         if st.button("💸 Simpan Pengeluaran", use_container_width=True):
-            pengeluaran_data.append({
-                "tanggal": tanggal.strftime("%Y-%m-%d"),
-                "barang": barang,
-                "harga": float(harga),
-                "oleh": st.session_state.username
-            })
-            save_json(PENGELUARAN_FILE, pengeluaran_data)
-            st.success("✅ Pengeluaran tersimpan!")
-            st.rerun()
+            if barang.strip():  # Validate input
+                pengeluaran_data.append({
+                    "tanggal": tanggal.strftime("%Y-%m-%d"),
+                    "barang": barang,
+                    "harga": float(harga),
+                    "oleh": st.session_state.username
+                })
+                save_json(PENGELUARAN_FILE, pengeluaran_data)
+                st.success("✅ Pengeluaran tersimpan!")
+                st.rerun()
+            else:
+                st.error("❌ Nama barang tidak boleh kosong!")
 
         st.header("💰 Riwayat Pengeluaran")
         if pengeluaran_data:
@@ -338,13 +356,15 @@ else:
         with col4: gaji = st.number_input("Gaji/Bulan", min_value=0.0, value=1000000.0)
         
         if st.button("👤 Buat Akun Karyawan", use_container_width=True):
-            if username not in users:
+            if username not in users and username.strip():
                 users[username] = {"password": password, "role": "karyawan", "nama": nama, "gaji": gaji}
                 karyawan_data.append({"username": username, "nama": nama, "gaji": gaji, "status": "aktif"})
                 save_json(USER_FILE, users)
                 save_json(KARYAWAN_FILE, karyawan_data)
                 st.success(f"✅ Akun {username} berhasil dibuat!")
                 st.rerun()
+            elif not username.strip():
+                st.error("❌ Username tidak boleh kosong!")
             else:
                 st.error("❌ Username sudah ada!")
 
