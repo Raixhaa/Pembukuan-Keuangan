@@ -1,93 +1,140 @@
 import streamlit as st
-import pandas as pd
-from datetime import datetime
+import json
+import os
 
-# Konfigurasi halaman
-st.set_page_config(page_title="Pembukuan Keuangan Sederhana", layout="centered")
+# =========================
+# FILE PENYIMPANAN USER
+# =========================
+USER_FILE = "users.json"
 
-st.title("📒 Pembukuan Keuangan Sederhana")
-st.write("Aplikasi sederhana untuk mencatat pemasukan dan pengeluaran.")
+# =========================
+# DEFAULT HOST / ADMIN
+# =========================
+DEFAULT_HOST = {
+    "admin": {
+        "password": "admin123",
+        "role": "host"
+    }
+}
 
-# Session state untuk menyimpan data
-if "data" not in st.session_state:
-    st.session_state.data = pd.DataFrame(columns=[
-        "Tanggal", "Keterangan", "Kategori", "Jenis", "Jumlah"
-    ])
+# =========================
+# LOAD USER
+# =========================
+def load_users():
+    if not os.path.exists(USER_FILE):
+        with open(USER_FILE, "w") as f:
+            json.dump(DEFAULT_HOST, f)
 
-# Form input transaksi
-with st.form("form_keuangan"):
-    tanggal = st.date_input("Tanggal", datetime.today())
-    keterangan = st.text_input("Keterangan")
-    kategori = st.selectbox(
-        "Kategori",
-        ["Makanan", "Transportasi", "Belanja", "Gaji", "Lainnya"]
-    )
-    jenis = st.radio("Jenis Transaksi", ["Pemasukan", "Pengeluaran"])
-    jumlah = st.number_input("Jumlah (Rp)", min_value=0, step=1000)
+    with open(USER_FILE, "r") as f:
+        return json.load(f)
 
-    submit = st.form_submit_button("Tambah Transaksi")
+# =========================
+# SAVE USER
+# =========================
+def save_users(users):
+    with open(USER_FILE, "w") as f:
+        json.dump(users, f, indent=4)
 
-    if submit:
-        data_baru = pd.DataFrame({
-            "Tanggal": [tanggal],
-            "Keterangan": [keterangan],
-            "Kategori": [kategori],
-            "Jenis": [jenis],
-            "Jumlah": [jumlah]
-        })
+# =========================
+# SESSION LOGIN
+# =========================
+if "login" not in st.session_state:
+    st.session_state.login = False
 
-        st.session_state.data = pd.concat(
-            [st.session_state.data, data_baru],
-            ignore_index=True
-        )
+if "username" not in st.session_state:
+    st.session_state.username = ""
 
-        st.success("Transaksi berhasil ditambahkan!")
+if "role" not in st.session_state:
+    st.session_state.role = ""
 
-# Menampilkan data
-st.subheader("📋 Data Transaksi")
+users = load_users()
 
-if not st.session_state.data.empty:
-    st.dataframe(st.session_state.data, use_container_width=True)
+# =========================
+# LOGIN PAGE
+# =========================
+if not st.session_state.login:
 
-    # Perhitungan keuangan
-    pemasukan = st.session_state.data[
-        st.session_state.data["Jenis"] == "Pemasukan"
-    ]["Jumlah"].sum()
+    st.title("🔐 Login Pembukuan")
 
-    pengeluaran = st.session_state.data[
-        st.session_state.data["Jenis"] == "Pengeluaran"
-    ]["Jumlah"].sum()
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
 
-    saldo = pemasukan - pengeluaran
+    if st.button("Login"):
 
-    # Ringkasan
-    st.subheader("💰 Ringkasan Keuangan")
+        if username in users:
 
-    col1, col2, col3 = st.columns(3)
+            if users[username]["password"] == password:
 
-    col1.metric("Total Pemasukan", f"Rp {pemasukan:,.0f}")
-    col2.metric("Total Pengeluaran", f"Rp {pengeluaran:,.0f}")
-    col3.metric("Saldo", f"Rp {saldo:,.0f}")
+                st.session_state.login = True
+                st.session_state.username = username
+                st.session_state.role = users[username]["role"]
 
-    # Grafik
-    st.subheader("📊 Grafik Keuangan")
+                st.success("Login berhasil!")
+                st.rerun()
 
-    grafik = pd.DataFrame({
-        "Jenis": ["Pemasukan", "Pengeluaran"],
-        "Jumlah": [pemasukan, pengeluaran]
-    })
+            else:
+                st.error("Password salah")
 
-    st.bar_chart(grafik.set_index("Jenis"))
+        else:
+            st.error("Username tidak ditemukan")
 
-    # Download CSV
-    csv = st.session_state.data.to_csv(index=False).encode("utf-8")
-
-    st.download_button(
-        label="⬇ Download Data CSV",
-        data=csv,
-        file_name="pembukuan_keuangan.csv",
-        mime="text/csv"
-    )
-
+# =========================
+# DASHBOARD
+# =========================
 else:
-    st.info("Belum ada data transaksi.")
+
+    st.sidebar.success(f"Login sebagai: {st.session_state.username}")
+    st.sidebar.info(f"Role: {st.session_state.role}")
+
+    # LOGOUT
+    if st.sidebar.button("Logout"):
+        st.session_state.login = False
+        st.session_state.username = ""
+        st.session_state.role = ""
+        st.rerun()
+
+    st.title("📒 Sistem Pembukuan Keuangan")
+
+    # =========================
+    # MENU HOST
+    # =========================
+    if st.session_state.role == "host":
+
+        st.subheader("👨‍💼 Tambah Akun Karyawan")
+
+        new_user = st.text_input("Username Baru")
+        new_pass = st.text_input("Password Baru", type="password")
+
+        if st.button("Tambah Karyawan"):
+
+            if new_user in users:
+                st.warning("Username sudah digunakan")
+
+            elif new_user == "" or new_pass == "":
+                st.warning("Isi semua data")
+
+            else:
+
+                users[new_user] = {
+                    "password": new_pass,
+                    "role": "karyawan"
+                }
+
+                save_users(users)
+
+                st.success("Akun karyawan berhasil ditambahkan")
+
+        st.divider()
+
+        st.subheader("📋 Data User")
+
+        for user, data in users.items():
+            st.write(f"👤 {user} | Role: {data['role']}")
+
+    # =========================
+    # MENU KARYAWAN
+    # =========================
+    elif st.session_state.role == "karyawan":
+
+        st.subheader("👨‍🔧 Dashboard Karyawan")
+        st.write("Selamat datang di sistem pembukuan.")
