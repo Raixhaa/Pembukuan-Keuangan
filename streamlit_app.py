@@ -30,19 +30,26 @@ DEFAULT_MENU = [
 def load_json(file_path, default_data):
     if not os.path.exists(file_path):
         os.makedirs(os.path.dirname(file_path) if os.path.dirname(file_path) else '.', exist_ok=True)
-        with open(file_path, "w") as f: json.dump(default_data, f, indent=4)
+        with open(file_path, "w") as f: 
+            json.dump(default_data, f, indent=4)
     try:
-        with open(file_path, "r") as f: return json.load(f)
+        with open(file_path, "r") as f: 
+            return json.load(f)
     except: 
-        with open(file_path, "w") as f: json.dump(default_data, f, indent=4)
+        with open(file_path, "w") as f: 
+            json.dump(default_data, f, indent=4)
         return default_data
 
 def save_json(file_path, data):
     os.makedirs(os.path.dirname(file_path) if os.path.dirname(file_path) else '.', exist_ok=True)
-    with open(file_path, "w") as f: json.dump(data, f, indent=4)
+    with open(file_path, "w") as f: 
+        json.dump(data, f, indent=4)
 
-def format_currency(amount): return f"Rp {int(amount):,}".replace(",", ".")
-def format_date(date_str): return pd.to_datetime(date_str).strftime("%d/%m/%Y") if date_str else ""
+def format_currency(amount): 
+    return f"Rp {int(amount):,}".replace(",", ".")
+
+def format_date(date_str): 
+    return pd.to_datetime(date_str).strftime("%d/%m/%Y") if date_str else ""
 
 # LOAD DATA
 users = load_json(USER_FILE, DEFAULT_USERS)
@@ -51,11 +58,17 @@ pengeluaran_data = load_json(PENGELUARAN_FILE, [])
 pendapatan_data = load_json(PENDAPATAN_FILE, [])
 karyawan_data = load_json(KARYAWAN_FILE, [])
 
-# SESSION
-if "login" not in st.session_state: st.session_state.login = False
-if "username" not in st.session_state: st.session_state.username = ""
-if "role" not in st.session_state: st.session_state.role = ""
-if "selected_menu" not in st.session_state: st.session_state.selected_menu = "📊 Dashboard"
+# SESSION STATE
+if "login" not in st.session_state: 
+    st.session_state.login = False
+if "username" not in st.session_state: 
+    st.session_state.username = ""
+if "role" not in st.session_state: 
+    st.session_state.role = ""
+if "selected_menu" not in st.session_state: 
+    st.session_state.selected_menu = "📊 Dashboard"
+if "sidebar_open" not in st.session_state:
+    st.session_state.sidebar_open = True
 
 # =========================================
 # 🌈 PREMIUM CSS DESIGN
@@ -79,7 +92,7 @@ button[kind="primary"] {background: linear-gradient(135deg, #ff6b6b, #4ecdc4, #4
 button[kind="primary"]:hover {transform: translateY(-2px) !important; box-shadow: 0 15px 40px rgba(255,107,107,0.5) !important;}
 [data-testid="stSidebar"] {background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)) !important; backdrop-filter: blur(25px) !important; border-radius: 20px !important; box-shadow: 10px 0 40px rgba(0,0,0,0.1) !important;}
 .stTextInput > div > div > input, .stNumberInput > div > div > input, .stDateInput > div > div > input {border-radius: 15px !important; border: 2px solid #e2e8f0 !important; padding: 12px 16px !important; background: rgba(255,255,255,0.9) !important;}
-.stSelectbox > div > div > div {border-radius: 15px !important; border: 2px solid #e2e8f0 !important;}
+.stSelectbox > div > div > div, .stNumberInput > div > div > div {border-radius: 15px !important; border: 2px solid #e2e8f0 !important;}
 [data-testid="stDataFrame"] {border-radius: 20px !important; border: 2px solid #e2e8f0 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;}
 .stMetric > label {font-size: 1.1rem !important; font-weight: 600 !important; color: #64748b !important;}
 .stMetric > div > div {font-size: 2rem !important; font-weight: 700 !important;}
@@ -94,64 +107,114 @@ if not st.session_state.login:
     st.markdown("<div class='big-title'>🍹 EsKu Dashboard</div>", unsafe_allow_html=True)
     st.markdown("<div style='text-align: center; font-size: 1.8rem; font-weight: 600; color: #64748b; margin-bottom: 3rem;'>Sistem Pembukuan Modern untuk UMKM Minuman</div>", unsafe_allow_html=True)
     
-    with st.container():
-        col1, col2 = st.columns([1, 2])
-        with col1: username = st.text_input("👤 Username", placeholder="admin", key="login_user")
-        with col2: password = st.text_input("🔑 Password", type="password", placeholder="admin123", key="login_pass")
-        
-        if st.button("🚀 Masuk ke Dashboard", use_container_width=True, key="login_btn"):
-            if username in users and users[username]["password"] == password:
-                st.session_state.update(login=True, username=username, role=users[username]["role"])
-                st.success("✅ Selamat datang!")
-                st.rerun()
-            else:
-                st.error("❌ Username atau password salah!")
+    col1, col2 = st.columns([1, 2])
+    with col1: 
+        username = st.text_input("👤 Username", placeholder="admin")
+    with col2: 
+        password = st.text_input("🔑 Password", type="password", placeholder="admin123")
+    
+    if st.button("🚀 Masuk ke Dashboard", use_container_width=True):
+        if username in users and users[username]["password"] == password:
+            st.session_state.update(login=True, username=username, role=users[username]["role"])
+            st.success("✅ Selamat datang!")
+            st.rerun()
+        else:
+            st.error("❌ Username atau password salah!")
 
 # =========================================
 # MAIN DASHBOARD
 # =========================================
 else:
-    # TOTALS
+    # CALCULATE TOTALS
     total_pendapatan = sum(d.get("total", 0) for d in pendapatan_data)
     total_pengeluaran = sum(d.get("harga", 0) for d in pengeluaran_data)
     total_gaji = sum(d.get("gaji", 0) for d in karyawan_data)
     keuntungan = total_pendapatan - total_pengeluaran - total_gaji
 
-    # SIDEBAR - DIFFERENT FOR HOST & KARYAWAN
-    with st.sidebar:
-        # Profile Card
-        st.markdown(f"""
-        <div style='text-align: center; padding: 25px; background: linear-gradient(135deg, rgba(255,107,107,0.2), rgba(78,205,196,0.2)); border-radius: 20px; margin-bottom: 25px;'>
-            <div style='font-size: 4rem;'>{'👑' if st.session_state.role == 'host' else '👤'}</div>
-            <div style='font-size: 1.6rem; font-weight: 800; margin-bottom: 5px;'>{st.session_state.username}</div>
-            <div style='font-size: 1rem; font-weight: 700; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;'>
-                {st.session_state.role.upper()}
+    # TOP BAR - SIDEBAR TOGGLE
+    top_col1, top_col2 = st.columns([1, 10])
+    with top_col1:
+        if not st.session_state.sidebar_open:
+            if st.button("📱"):
+                st.session_state.sidebar_open = True
+                st.rerun()
+
+    # SIDEBAR
+    if st.session_state.sidebar_open:
+        with st.sidebar:
+            # CLOSE BUTTON
+            if st.button("❌ Tutup Sidebar", use_container_width=True):
+                st.session_state.sidebar_open = False
+                st.rerun()
+
+            # PROFILE CARD
+            st.markdown(f"""
+            <div style='text-align: center; padding: 25px;
+            background: linear-gradient(135deg,
+            rgba(255,107,107,0.2),
+            rgba(78,205,196,0.2));
+            border-radius: 20px;
+            margin-bottom: 25px;'>
+
+                <div style='font-size: 4rem;'>
+                    {'👑' if st.session_state.role == 'host' else '👤'}
+                </div>
+
+                <div style='font-size: 1.6rem;
+                font-weight: 800;
+                margin-bottom: 5px;'>
+                    {st.session_state.username}
+                </div>
+
+                <div style='font-size: 1rem;
+                font-weight: 700;
+                background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;'>
+                    {st.session_state.role.upper()}
+                </div>
+
             </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
-        # QUICK METRICS
-        st.metric("💰 Pendapatan", format_currency(total_pendapatan))
-        st.metric("💸 Pengeluaran", format_currency(total_pengeluaran))
-        st.metric("💚 Keuntungan", format_currency(keuntungan))
+            # QUICK METRICS
+            st.metric("💰 Pendapatan", format_currency(total_pendapatan))
+            st.metric("💸 Pengeluaran", format_currency(total_pengeluaran))
+            st.metric("💚 Keuntungan", format_currency(keuntungan))
 
-        # MENU - HOST vs KARYAWAN
-        if st.session_state.role == "host":
-            menu_options = ["📊 Dashboard", "🍹 Menu Jualan", "💰 Pendapatan", "💸 Pengeluaran", "👥 Karyawan", "📈 Laporan"]
-        else:
-            menu_options = ["💰 Pendapatan", "💸 Pengeluaran", "📈 Laporan Harian"]
-        
-        selected = st.radio("📋 Pilih Menu:", menu_options, key="sidebar_menu")
-        if selected != st.session_state.selected_menu:
-            st.session_state.selected_menu = selected
-            st.rerun()
+            # MENU OPTIONS
+            if st.session_state.role == "host":
+                menu_options = [
+                    "📊 Dashboard",
+                    "🍹 Menu Jualan",
+                    "💰 Pendapatan",
+                    "💸 Pengeluaran",
+                    "👥 Karyawan",
+                    "📈 Laporan"
+                ]
+            else:
+                menu_options = [
+                    "💰 Pendapatan",
+                    "💸 Pengeluaran",
+                    "📈 Laporan Harian"
+                ]
 
-        st.button("🚪 Logout", use_container_width=True)
+            selected = st.radio("📋 Pilih Menu:", menu_options, key="sidebar_menu", index=menu_options.index(st.session_state.selected_menu))
 
-    # MAIN CONTENT
+            if selected != st.session_state.selected_menu:
+                st.session_state.selected_menu = selected
+                st.rerun()
+
+            # LOGOUT
+            if st.button("🚪 Logout", use_container_width=True):
+                for key in list(st.session_state.keys()):
+                    del st.session_state[key]
+                st.rerun()
+
+    # MAIN CONTENT TITLE
     st.markdown(f"<div class='big-title'>{st.session_state.selected_menu}</div>", unsafe_allow_html=True)
 
-    # 1. DASHBOARD
+    # CONTENT PAGES
     if st.session_state.selected_menu == "📊 Dashboard":
         col1, col2, col3 = st.columns(3)
         with col1:
@@ -176,8 +239,7 @@ else:
             </div>
             """, unsafe_allow_html=True)
 
-    # 2. MENU JUALAN (HOST ONLY)
-    elif st.session_state.selected_menu == "🍹 Menu Jualan":
+    elif st.session_state.selected_menu == "🍹 Menu Jualan" and st.session_state.role == "host":
         st.header("➕ Tambah Menu Baru")
         col1, col2, col3 = st.columns(3)
         with col1: nama = st.text_input("Nama Menu")
@@ -190,7 +252,6 @@ else:
             st.success("✅ Menu ditambahkan!")
             st.rerun()
 
-        # TABEL MENU - CANTIK
         st.header("📋 Daftar Menu")
         if menu_data:
             df_menu = pd.DataFrame(menu_data)
@@ -199,24 +260,28 @@ else:
             df_menu = df_menu[["nama", "Harga 1", "Harga 2", "stok"]]
             st.dataframe(df_menu, use_container_width=True, hide_index=True)
 
-    # 3. PENDAPATAN
-    elif st.session_state.selected_menu in ["💰 Pendapatan", "💰 Pendapatan"]:
+    elif st.session_state.selected_menu == "💰 Pendapatan":
         st.header("➕ Input Penjualan")
         col1, col2, col3 = st.columns(3)
-        with col1: menu_pilih = st.selectbox("Menu", [""] + [m["nama"] for m in menu_data])
-        with col2: jumlah = st.selectbox("Jumlah Gelas", [1, 2])
+        with col1: 
+            menu_options = [""] + [m["nama"] for m in menu_data]
+            menu_pilih = st.selectbox("Menu", menu_options)
+        with col2: jumlah = st.number_input("Jumlah Gelas", min_value=1, value=1, step=1)
         with col3: tanggal = st.date_input("Tanggal", value=date.today())
         
         if menu_pilih:
             menu = next(m for m in menu_data if m["nama"] == menu_pilih)
-            total = menu[f"harga_{jumlah}"]
-            st.success(f"💰 **Total: {format_currency(total)}**")
+            harga_per_gelas = menu["harga_1"]
+            total = harga_per_gelas * jumlah
+            st.success(f"💰 **Harga per gelas: {format_currency(harga_per_gelas)}**")
+            st.success(f"💰 **Total ({jumlah} gelas): {format_currency(total)}**")
             
             if st.button("✅ Simpan Penjualan", use_container_width=True):
                 pendapatan_data.append({
                     "tanggal": tanggal.strftime("%Y-%m-%d"),
                     "menu": menu_pilih,
                     "jumlah": jumlah,
+                    "harga_per_gelas": harga_per_gelas,
                     "total": total,
                     "oleh": st.session_state.username
                 })
@@ -224,18 +289,18 @@ else:
                 st.success("✅ Penjualan tersimpan!")
                 st.rerun()
 
-        # TABEL PENDAPATAN
         st.header("📊 Riwayat Penjualan")
         if pendapatan_data:
             df = pd.DataFrame(pendapatan_data)
             df["tanggal"] = df["tanggal"].apply(format_date)
             df["total"] = df["total"].apply(format_currency)
-            df = df[["tanggal", "menu", "jumlah", "total", "oleh"]]
+            df["harga_per_gelas"] = df["harga_per_gelas"].apply(format_currency)
+            df = df[["tanggal", "menu", "jumlah", "harga_per_gelas", "total", "oleh"]]
+            df.columns = ["Tanggal", "Menu", "Jumlah", "Harga/Gelas", "Total", "Oleh"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
             st.info("📝 Belum ada data penjualan")
 
-    # 4. PENGELUARAN
     elif st.session_state.selected_menu == "💸 Pengeluaran":
         st.header("➕ Input Pengeluaran")
         col1, col2, col3 = st.columns([1.5, 3, 1.5])
@@ -254,7 +319,6 @@ else:
             st.success("✅ Pengeluaran tersimpan!")
             st.rerun()
 
-        # TABEL PENGELUARAN
         st.header("💰 Riwayat Pengeluaran")
         if pengeluaran_data:
             df = pd.DataFrame(pengeluaran_data)
@@ -265,8 +329,7 @@ else:
         else:
             st.info("📝 Belum ada data pengeluaran")
 
-    # 5. KARYAWAN (HOST ONLY)
-    elif st.session_state.selected_menu == "👥 Karyawan":
+    elif st.session_state.selected_menu == "👥 Karyawan" and st.session_state.role == "host":
         st.header("👑 Buat Akun Karyawan")
         col1, col2, col3, col4 = st.columns(4)
         with col1: nama = st.text_input("Nama Lengkap")
@@ -285,7 +348,6 @@ else:
             else:
                 st.error("❌ Username sudah ada!")
 
-        # TABEL KARYAWAN
         st.header("👥 Daftar Karyawan")
         if karyawan_data:
             df = pd.DataFrame(karyawan_data)
@@ -294,8 +356,7 @@ else:
         else:
             st.info("📝 Belum ada karyawan")
 
-    # 6. LAPORAN
-    elif "📈 Laporan" in st.session_state.selected_menu:
+    elif st.session_state.selected_menu in ["📈 Laporan", "📈 Laporan Harian"]:
         st.header("📊 Laporan Keuangan")
         
         if pendapatan_data:
@@ -320,7 +381,7 @@ else:
             monthly = df_pendapatan.groupby(df_pendapatan['tanggal'].dt.to_period('M'))['total'].sum()
             st.bar_chart(monthly)
             
-            # SUMMARY TABEL
+            # SUMMARY
             st.subheader("💼 Ringkasan")
             summary_data = {
                 "Kategori": ["Total Pendapatan", "Total Pengeluaran", "Total Gaji", "Keuntungan Bersih"],
