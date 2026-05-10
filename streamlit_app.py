@@ -1,288 +1,212 @@
-# =====================================
-# CARD STATISTIK
-# =====================================
+# =========================================
+# CUSTOM CSS
+# =========================================
+st.markdown("""
+<style>
 
-col1, col2, col3 = st.columns(3)
+#MainMenu {
+    visibility: hidden;
+}
 
-with col1:
+footer {
+    visibility: hidden;
+}
 
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-title">
-            💰 Pendapatan
-        </div>
+header {
+    visibility: hidden;
+}
 
-        <div class="metric-value">
-            Rp {total_pendapatan:,.0f}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+/* BACKGROUND LEBIH CERAH */
+.main {
+    background: linear-gradient(
+        135deg,
+        #ffffff,
+        #f0f9ff,
+        #dbeafe
+    );
+}
 
-with col2:
+/* SIDEBAR */
+[data-testid="stSidebar"] {
+    background: linear-gradient(
+        180deg,
+        #2563eb,
+        #38bdf8
+    );
+    padding-top: 20px;
+}
 
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-title">
-            💸 Pengeluaran
-        </div>
+[data-testid="stSidebar"] * {
+    color: white;
+}
 
-        <div class="metric-value">
-            Rp {total_pengeluaran:,.0f}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+/* TITLE */
+.big-title {
+    font-size: 52px;
+    font-weight: 800;
+    color: #1e3a8a;
+    text-align: center;
+}
 
-with col3:
+.sub-title {
+    text-align: center;
+    color: #64748b;
+    font-size: 18px;
+    margin-bottom: 30px;
+}
 
-    st.markdown(f"""
-    <div class="metric-card">
-        <div class="metric-title">
-            📈 Keuntungan
-        </div>
+/* LOGIN */
+.login-box {
+    background: rgba(255,255,255,0.9);
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0px 10px 30px rgba(0,0,0,0.08);
+}
 
-        <div class="metric-value">
-            Rp {keuntungan:,.0f}
-        </div>
-    </div>
-    """, unsafe_allow_html=True)
+/* CARD */
+.metric-card {
+    background: linear-gradient(
+        135deg,
+        #38bdf8,
+        #60a5fa
+    );
+    padding: 30px;
+    border-radius: 25px;
+    color: white;
+    text-align: center;
+    box-shadow: 0px 10px 25px rgba(0,0,0,0.10);
+    transition: 0.3s;
+}
 
-st.write("")
+.metric-card:hover {
+    transform: translateY(-5px);
+}
 
-# =====================================
-# MENU HOST
-# =====================================
-if st.session_state.role == "host":
+.metric-title {
+    font-size: 18px;
+    opacity: 0.9;
+}
 
-    menu = st.sidebar.radio(
-        "📋 Menu",
-        [
-            "Menu Jualan",
-            "Pengeluaran",
-            "Pendapatan",
-            "Karyawan",
-            "Rekap Harian",
-            "Rekap Bulanan",
-            "Grafik"
-        ]
-    )
+.metric-value {
+    font-size: 34px;
+    font-weight: bold;
+}
 
-    # =================================
-    # MENU JUALAN
-    # =================================
-    if menu == "Menu Jualan":
+/* MENU CARD */
+.menu-card {
+    background: rgba(255,255,255,0.95);
+    border-radius: 25px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0px 6px 20px rgba(0,0,0,0.06);
+    transition: 0.3s;
+    margin-bottom: 25px;
+}
 
-        st.subheader("🍹 Tambah Menu Minuman")
+.menu-card:hover {
+    transform: scale(1.03);
+}
 
-        col1, col2 = st.columns(2)
+.menu-image {
+    font-size: 60px;
+}
 
-        with col1:
+.menu-title {
+    font-size: 26px;
+    font-weight: bold;
+    color: #1e3a8a;
+}
 
-            nama = st.text_input(
-                "Nama Minuman"
-            )
+.price {
+    color: #2563eb;
+    font-size: 30px;
+    font-weight: bold;
+}
 
-            harga_1 = st.number_input(
-                "Harga 1 Barang",
-                min_value=0,
-                step=1000
-            )
+.paket {
+    background: #e0f2fe;
+    padding: 10px;
+    border-radius: 12px;
+    margin-top: 10px;
+    color: #0369a1;
+    font-weight: bold;
+}
 
-        with col2:
+/* BUTTON */
+.stButton>button {
+    width: 100%;
+    border-radius: 15px;
+    height: 50px;
+    border: none;
+    background: linear-gradient(
+        90deg,
+        #38bdf8,
+        #60a5fa
+    );
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    transition: 0.3s;
+}
 
-            harga_2 = st.number_input(
-                "Harga Paket 2 Barang",
-                min_value=0,
-                step=1000
-            )
+.stButton>button:hover {
+    transform: scale(1.02);
+}
+
+/* INPUT */
+.stTextInput input,
+.stNumberInput input,
+.stDateInput input {
+    border-radius: 12px !important;
+    border: 2px solid #bae6fd !important;
+}
+
+/* TABLE */
+[data-testid="stDataFrame"] {
+    border-radius: 20px;
+    overflow: hidden;
+    background: white;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# =========================================
+# PERHITUNGAN TOTAL YANG BENAR
+# =========================================
+
+harga = 0
+total = 0
+
+for x in menu_data:
+
+    if x["nama"] == nama_menu:
 
         # =================================
-        # TAMBAH MENU
+        # HITUNG PAKET
         # =================================
-        if st.button("➕ Tambah Menu"):
 
-            data = {
-                "nama": nama,
-                "harga_1": harga_1,
-                "harga_2": harga_2
-            }
+        if jumlah >= 2:
 
-            menu_data.append(data)
+            paket = jumlah // 2
+            sisa = jumlah % 2
 
-            save_json(
-                MENU_FILE,
-                menu_data
+            total = (
+                paket * x["harga_2"]
+            ) + (
+                sisa * x["harga_1"]
             )
 
-            st.success(
-                "Menu berhasil ditambahkan"
+        else:
+
+            total = (
+                jumlah * x["harga_1"]
             )
 
-            st.rerun()
+# =========================================
+# TAMPILKAN TOTAL
+# =========================================
 
-        st.write("")
-
-        # =================================
-        # DAFTAR MENU
-        # =================================
-        st.subheader("📋 Daftar Menu")
-
-        if len(menu_data) > 0:
-
-            cols = st.columns(3)
-
-            emoji_list = [
-                "🥤",
-                "🍧",
-                "🧋",
-                "🍹",
-                "🧊",
-                "🥶"
-            ]
-
-            for i, item in enumerate(menu_data):
-
-                with cols[i % 3]:
-
-                    emoji = emoji_list[
-                        i % len(emoji_list)
-                    ]
-
-                    st.markdown(
-                        f"""
-                        <div class='menu-card'>
-
-                            <div class='menu-image'>
-                                {emoji}
-                            </div>
-
-                            <div class='menu-title'>
-                                {item['nama']}
-                            </div>
-
-                            <br>
-
-                            <div class='price'>
-                                Rp {item['harga_1']:,.0f}
-                            </div>
-
-                            <div class='paket'>
-                                Paket 2 = Rp {item['harga_2']:,.0f}
-                            </div>
-
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
-
-        # =================================
-        # HAPUS MENU
-        # =================================
-        st.divider()
-
-        st.subheader("🗑 Hapus Menu")
-
-        if len(menu_data) > 0:
-
-            hapus_menu = st.selectbox(
-                "Pilih menu yang ingin dihapus",
-                [x["nama"] for x in menu_data]
-            )
-
-            if st.button("❌ Hapus Menu"):
-
-                menu_data = [
-                    x for x in menu_data
-                    if x["nama"] != hapus_menu
-                ]
-
-                save_json(
-                    MENU_FILE,
-                    menu_data
-                )
-
-                st.success(
-                    "Menu berhasil dihapus"
-                )
-
-                st.rerun()
-
-    # =================================
-    # PENDAPATAN
-    # =================================
-    elif menu == "Pendapatan":
-
-        st.subheader("💰 Pendapatan")
-
-        tanggal = st.date_input(
-            "Tanggal"
-        )
-
-        pilihan_menu = [
-            x["nama"]
-            for x in menu_data
-        ]
-
-        nama_menu = st.selectbox(
-            "Pilih Menu",
-            pilihan_menu
-        )
-
-        jumlah = st.number_input(
-            "Jumlah Terjual",
-            min_value=1
-        )
-
-        harga = 0
-        total = 0
-
-        for x in menu_data:
-
-            if x["nama"] == nama_menu:
-
-                # =========================
-                # HITUNG PAKET
-                # =========================
-                if jumlah >= 2:
-
-                    paket = jumlah // 2
-                    sisa = jumlah % 2
-
-                    total = (
-                        paket * x["harga_2"]
-                    ) + (
-                        sisa * x["harga_1"]
-                    )
-
-                else:
-
-                    total = (
-                        jumlah * x["harga_1"]
-                    )
-
-        st.info(
-            f"💰 Total : Rp {total:,.0f}"
-        )
-
-        if st.button(
-            "Tambah Pendapatan"
-        ):
-
-            data = {
-                "tanggal": str(tanggal),
-                "menu": nama_menu,
-                "jumlah": jumlah,
-                "total": total
-            }
-
-            pendapatan_data.append(data)
-
-            save_json(
-                PENDAPATAN_FILE,
-                pendapatan_data
-            )
-
-            st.success(
-                "Pendapatan berhasil"
-            )
-
-            st.rerun()
+st.info(
+    f"💰 Total Pendapatan : Rp {total:,.0f}"
+)
