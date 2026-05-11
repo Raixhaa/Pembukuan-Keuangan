@@ -92,19 +92,19 @@ st.markdown("""
 * {font-family: 'Inter', sans-serif !important;}
 
 html, body, [data-testid="stAppViewContainer"] {
-    background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 45%, #ffffff 100%);
+    background: linear-gradient(180deg, #fff7ed 0%, #fef3c7 45%, #ede9fe 100%);
     color: #0f172a;
     min-height: 100vh;
 }
 
 .main {
-    background: rgba(255, 255, 255, 0.92);
+    background: #ffffffdd;
     backdrop-filter: blur(18px);
     border-radius: 28px;
-    box-shadow: 0 30px 80px rgba(148, 163, 184, 0.24);
+    box-shadow: 0 30px 80px #94a3b83d;
     margin: 24px;
     padding: 32px;
-    border: 1px solid rgba(148, 163, 184, 0.28);
+    border: 1px solid #94a3b47d;
 }
 
 .big-title {
@@ -122,7 +122,7 @@ html, body, [data-testid="stAppViewContainer"] {
     font-size: 3.5rem !important;
     font-weight: 400 !important;
     margin-right: 10px;
-    color: #14b8a6 !important;
+    color: #ec4899 !important;
 }
 
 .subtitle {
@@ -134,12 +134,12 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 .metric-card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.96), rgba(239,246,255,0.9));
-    border: 1px solid rgba(59,130,246,0.18);
+    background: linear-gradient(135deg, #fffffff0, #eff6fff0);
+    border: 1px solid #3b82f626;
     border-radius: 22px;
     padding: 2rem;
     transition: all 0.25s ease;
-    box-shadow: 0 18px 40px rgba(148,163,184,0.16);
+    box-shadow: 0 18px 40px #94a3b828;
     height: 170px;
     display: flex;
     flex-direction: column;
@@ -148,8 +148,53 @@ html, body, [data-testid="stAppViewContainer"] {
 
 .metric-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 20px 45px rgba(148,163,184,0.24);
-    border-color: rgba(59,130,246,0.28);
+    box-shadow: 0 20px 45px #94a3b83d;
+    border-color: #3b82f64a;
+}
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.menu-card {
+    background: #ffffff;
+    border: 1px solid #bfdbfe;
+    border-radius: 22px;
+    padding: 1.35rem;
+    transition: all 0.2s ease;
+    box-shadow: 0 14px 30px #c7d2fe40;
+}
+
+.menu-card.selected {
+    border-color: #0ea5e9;
+    box-shadow: 0 18px 40px #38bdf84d;
+}
+
+.menu-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 36px #c7d2fe60;
+}
+
+.menu-card-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 0.55rem;
+}
+
+.menu-card-price {
+    font-size: 0.95rem;
+    color: #475569;
+    margin-bottom: 0.35rem;
+}
+
+.menu-card-selected-note {
+    margin-top: 0.8rem;
+    color: #0ea5e9;
+    font-weight: 700;
 }
 
 .metric-title {color: #475569; font-weight: 600; font-size: 1rem; margin-bottom: 12px;}
@@ -160,11 +205,11 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 [data-testid="stSidebar"] {
-    background: rgba(255, 255, 255, 0.98) !important;
+    background: #fffffff8 !important;
     backdrop-filter: blur(18px) !important;
     border-radius: 28px !important;
-    box-shadow: 0 25px 75px rgba(148,163,184,0.24) !important;
-    border: 1px solid rgba(148, 163, 184, 0.22) !important;
+    box-shadow: 0 25px 75px #94a3b83d !important;
+    border: 1px solid #94a3b43d !important;
     padding: 24px 18px 24px 18px !important;
 }
 
@@ -185,17 +230,17 @@ html, body, [data-testid="stAppViewContainer"] {
 }
 
 button[kind="primary"] {
-    background: linear-gradient(135deg, #0ea5e9, #22c55e) !important;
+    background: linear-gradient(135deg, #38bdf8, #22c55e) !important;
     border-radius: 16px !important;
     height: 50px !important;
     font-weight: 700 !important;
-    box-shadow: 0 12px 30px rgba(16, 185, 129, 0.22) !important;
+    box-shadow: 0 12px 30px #10b98137 !important;
     color: #ffffff !important;
 }
 
 button[kind="primary"]:hover {
     transform: translateY(-2px) !important;
-    box-shadow: 0 18px 38px rgba(16, 185, 129, 0.32) !important;
+    box-shadow: 0 18px 38px #10b98151 !important;
 }
 
 .stTextInput > div > div > input,
@@ -203,22 +248,22 @@ button[kind="primary"]:hover {
 .stDateInput > div > div > input,
 .stSelectbox > div > div > div {
     border-radius: 16px !important;
-    border: 1px solid rgba(148, 163, 184, 0.3) !important;
+    border: 1px solid #94a3b44d !important;
     padding: 14px 18px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    background: #ffffffea !important;
     color: #0f172a !important;
     font-weight: 500;
 }
 
 .stTextInput > div > div > input:focus {
     border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+    box-shadow: 0 0 0 3px #3b82f61f !important;
 }
 
 [data-testid="stDataFrame"] {
     border-radius: 22px !important;
-    border: 1px solid rgba(148, 163, 184, 0.22) !important;
-    box-shadow: 0 16px 40px rgba(148,163,184,0.12) !important;
+    border: 1px solid #94a3b43d !important;
+    box-shadow: 0 16px 40px #94a3b41f !important;
 }
 
 .stMetric > label {font-size: 1rem !important; font-weight: 600 !important; color: #475569 !important;}
@@ -226,9 +271,9 @@ button[kind="primary"]:hover {
 
 #MainMenu, footer, header {visibility: hidden !important;}
 
-.stSuccess > div {border-radius: 14px !important; border-left: 4px solid #16a34a !important; background: rgba(167, 243, 208, 0.35) !important; color: #166534 !important;}
-.stError > div {border-radius: 14px !important; border-left: 4px solid #dc2626 !important; background: rgba(254, 226, 226, 0.48) !important; color: #991b1b !important;}
-.stInfo > div {border-radius: 14px !important; border-left: 4px solid #2563eb !important; background: rgba(191, 219, 254, 0.55) !important; color: #1e3a8a !important;}
+.stSuccess > div {border-radius: 14px !important; border-left: 4px solid #16a34a !important; background: #a7f3d018 !important; color: #166534 !important;}
+.stError > div {border-radius: 14px !important; border-left: 4px solid #dc2626 !important; background: #fee2e21e !important; color: #991b1b !important;}
+.stInfo > div {border-radius: 14px !important; border-left: 4px solid #2563eb !important; background: #bfdbfe8c !important; color: #1e3a8a !important;}
 
 .stSidebar .css-1v0mbdj.e16nr0p31 {
     padding-top: 0 !important;
@@ -412,20 +457,41 @@ else:
 
         elif st.session_state.selected_menu == "💰 Pendapatan":
             st.header("➕ Input Penjualan")
-            col1, col2, col3 = st.columns(3)
-            with col1: 
-                menu_options = [""] + [m["nama"] for m in menu_data]
-                menu_pilih = st.selectbox("Menu", menu_options, key="menu_select")
-            with col2: 
+            if "selected_menu_item" not in st.session_state:
+                st.session_state.selected_menu_item = menu_data[0]["nama"] if menu_data else ""
+
+            if menu_data:
+                st.markdown("<div style='display:flex; align-items:center; gap:1rem; margin-bottom:0.75rem;'><div style='font-weight:700; color:#0f172a;'>Pilih Menu</div><div style='color:#475569;'>Klik kotak untuk memilih menu penjualan.</div></div>", unsafe_allow_html=True)
+                for row_start in range(0, len(menu_data), 3):
+                    row_cols = st.columns(3)
+                    for j, m in enumerate(menu_data[row_start:row_start + 3]):
+                        selected_item = st.session_state.selected_menu_item == m["nama"]
+                        card_class = "menu-card selected" if selected_item else "menu-card"
+                        with row_cols[j]:
+                            st.markdown(f"""
+                                <div class='{card_class}'>
+                                    <div class='menu-card-title'>{m['nama']}</div>
+                                    <div class='menu-card-price'>1 Gelas: {format_currency(m['harga_1'])}</div>
+                                    <div class='menu-card-price'>2 Gelas: {format_currency(m['harga_2'])}</div>
+                                </div>
+                            """, unsafe_allow_html=True)
+                            if st.button("Pilih", key=f"menu_card_btn_{row_start + j}", use_container_width=True):
+                                st.session_state.selected_menu_item = m["nama"]
+                                st.rerun()
+                menu_pilih = st.session_state.selected_menu_item
+            else:
+                menu_pilih = ""
+
+            col1, col2 = st.columns([1.4, 1])
+            with col1:
                 jumlah = st.number_input("Jumlah", min_value=1, value=1, step=1, key="jumlah")
-            with col3: 
+            with col2:
                 tanggal = st.date_input("Tanggal", value=date.today(), key="tanggal")
-            
+
             if menu_pilih:
                 try:
                     menu = next(m for m in menu_data if m["nama"] == menu_pilih)
                     
-                    # FIXED: Proper price calculation
                     harga_1 = float(menu["harga_1"])
                     harga_2 = float(menu["harga_2"])
                     
@@ -436,7 +502,6 @@ else:
                         total = harga_2
                         ukuran = "2 Gelas"
                     else:
-                        # For 3+ items: pairs of 2 + remaining singles
                         pairs = jumlah // 2
                         singles = jumlah % 2
                         total = (harga_2 * pairs) + (harga_1 * singles)
@@ -460,11 +525,10 @@ else:
                         save_json(PENDAPATAN_FILE, pendapatan_data)
                         st.success("✅ Penjualan tersimpan!")
                         st.rerun()
-                        
                 except StopIteration:
                     st.error("❌ Menu tidak ditemukan!")
             else:
-                st.info("👆 Pilih menu terlebih dahulu")
+                st.info("👆 Tambahkan menu terlebih dahulu di Menu Jualan")
 
             st.header("📊 Riwayat Penjualan")
             if pendapatan_data:
