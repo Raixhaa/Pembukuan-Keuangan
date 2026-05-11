@@ -302,10 +302,13 @@ else:
         st.markdown(f"👋 Selamat datang, **{st.session_state.username}**!", unsafe_allow_html=True)
     with top_col3:
         if st.button("🚪 Keluar", key="logout_btn"):
-            # FIXED: Proper logout
+            # FIXED: Proper logout reset
             for key in list(st.session_state.keys()):
-                delattr(st.session_state, key)
+                del st.session_state[key]
             st.session_state.login = False
+            st.session_state.username = ""
+            st.session_state.role = ""
+            st.session_state.selected_menu = "📊 Dashboard"
             st.session_state.sidebar_open = False
             st.rerun()
 
