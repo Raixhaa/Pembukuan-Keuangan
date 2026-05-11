@@ -14,7 +14,7 @@ PENDAPATAN_FILE = "pendapatan.json"
 KARYAWAN_FILE = "karyawan.json"
 
 # DEFAULT DATA
-DEFAULT_USERS = {"admin": {"password": "admin123", "role": "host"}}
+DEFAULT_USERS = {"admin": {"password": "admin1234admin*", "role": "host"}}
 DEFAULT_MENU = [
     {"nama": "Es Teh", "harga_1": 3000, "harga_2": 5000, "stok": 50},
     {"nama": "Es Jeruk", "harga_1": 4000, "harga_2": 6000, "stok": 40},
