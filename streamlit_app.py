@@ -286,11 +286,22 @@ button[kind="primary"]:hover {
 </style>
 """, unsafe_allow_html=True)
 
-# LOGIN PAGE
+# LOGIN PAGE - CENTERED WITH LOGO
 if not st.session_state.login:
+    # CENTERED HEADER WITH LOGO
     st.markdown("""
-    <div class='big-title' data-emoji='🍹'>EsKu Dashboard</div>
-    <div class='subtitle'>Sistem Pembukuan Minuman Modern & Simpel</div>
+    <div style='text-align: center; padding: 3rem 2rem;'>
+        <div class='big-title' style='font-size: 4.2rem !important; margin-bottom: 1rem; display: inline-block;'>
+            🍹 EsKu Dashboard
+        </div>
+        <div style='font-size: 1.4rem; font-weight: 600; color: #64748b; margin-bottom: 2.5rem; letter-spacing: 0.5px;'>
+            Sistem Pembukuan Minuman Modern & Simpel
+        </div>
+        <div style='width: 300px; height: 300px; margin: 0 auto 3rem auto;'>
+            <img src='https://raw.githubusercontent.com/Raixhaa/Pembukuan-Keuangan/main/Hijau%20Ceria%20Ilustratsi%20Modern%20Es%20Kuwut%20Logo_20260511_191409_0000.png' 
+                 alt='EsKu Logo' style='width: 100%; height: 100%; object-fit: contain; border-radius: 20px; box-shadow: 0 12px 30px #10b98133;'>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
     
     col1, col2 = st.columns([1, 2])
@@ -307,7 +318,6 @@ if not st.session_state.login:
             st.rerun()
         else:
             st.error("❌ Username atau password salah!")
-
 else:
     # FIXED: Load data ONCE after login
     users = load_json(USER_FILE, DEFAULT_USERS)
