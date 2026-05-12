@@ -14,7 +14,7 @@ PENDAPATAN_FILE = "pendapatan.json"
 KARYAWAN_FILE = "karyawan.json"
 
 # DEFAULT DATA
-DEFAULT_USERS = {"admin": {"password": "admin123", "role": "host"}}
+DEFAULT_USERS = {"admin": {"password": "admin1234admin*", "role": "host"}}
 DEFAULT_MENU = [
     {"nama": "Es Teh", "harga_1": 3000, "harga_2": 5000, "stok": 50},
     {"nama": "Es Jeruk", "harga_1": 4000, "harga_2": 6000, "stok": 40},
@@ -754,15 +754,60 @@ else:
 
                     if st.session_state.role == "host":
                         st.subheader("💼 Ringkasan")
-                        if not monthly_index.empty:
-                            latest_period = monthly_index.max()
-                        else:
-                            latest_period = pd.Period(date.today(), "M")
-                        month_names = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+                        
+                        # SELECTOR BULAN DAN TAHUN
+                        col_date1, col_date2 = st.columns([1, 1])
+                        with col_date1:
+                            bulan_pilih = st.selectbox(
+                                "📅 Pilih Bulan:",
+                                options=["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                                        "Juli", "Agustus", "September", "Oktober", "November", "Desember"],
+                                index=11,
+                                key="select_bulan"
+                            )
+                        with col_date2:
+                            tahun_pilih = st.number_input(
+                                "📆 Tahun:",
+                                min_value=2020,
+                                max_value=date.today().year + 1,
+                                value=date.today().year,
+                                step=1,
+                                key="select_tahun"
+                            )
+                        
+                        # MAPPING BULAN
+                        month_names = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", 
+                                    "Juli", "Agustus", "September", "Oktober", "November", "Desember"]
+                        bulan_index = month_names.index(bulan_pilih) + 1
+                        periode_filter = f"{tahun_pilih}-{bulan_index:02d}"
+                        
+                        # Filter pendapatan
+                        pendapatan_bulan = 0
+                        if pendapatan_data:
+                            df_pendapatan = pd.DataFrame(pendapatan_data)
+                            if "tanggal" in df_pendapatan.columns:
+                                df_pendapatan["tanggal"] = pd.to_datetime(df_pendapatan["tanggal"], errors="coerce")
+                                df_pendapatan["periode"] = df_pendapatan["tanggal"].dt.to_period("M")
+                                mask = df_pendapatan["periode"].astype(str) == periode_filter
+                                pendapatan_bulan = df_pendapatan[mask]["total"].sum()
+                        
+                        # Filter pengeluaran
+                        pengeluaran_bulan = 0
+                        if pengeluaran_data:
+                            df_pengeluaran = pd.DataFrame(pengeluaran_data)
+                            if "tanggal" in df_pengeluaran.columns:
+                                df_pengeluaran["tanggal"] = pd.to_datetime(df_pengeluaran["tanggal"], errors="coerce")
+                                df_pengeluaran["periode"] = df_pengeluaran["tanggal"].dt.to_period("M")
+                                mask = df_pengeluaran["periode"].astype(str) == periode_filter
+                                pengeluaran_bulan = df_pengeluaran[mask]["harga"].sum()
+                        
+                        keuntungan_bulan = pendapatan_bulan - pengeluaran_bulan - total_gaji
+                        
                         summary_data = {
                             "Kategori": ["Bulan", "Tahun", "Pendapatan", "Pengeluaran", "Gaji Karyawan", "Keuntungan Bersih"],
-                            "Nominal": [month_names[latest_period.month - 1], str(latest_period.year), format_currency(total_pendapatan), format_currency(total_pengeluaran), 
-                                       format_currency(total_gaji), format_currency(keuntungan_bersih)]
+                            "Nominal": [bulan_pilih, str(tahun_pilih), format_currency(pendapatan_bulan), 
+                                    format_currency(pengeluaran_bulan), format_currency(total_gaji), 
+                                    format_currency(keuntungan_bulan)]
                         }
                         st.dataframe(pd.DataFrame(summary_data), use_container_width=True, hide_index=True)
                     else:
